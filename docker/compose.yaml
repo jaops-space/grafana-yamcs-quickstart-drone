@@ -1,0 +1,64 @@
+name: yamcs-grafana-quickstart
+
+services:
+  yamcs:
+    build:
+      context: ..
+      dockerfile: docker/yamcs/Dockerfile
+    hostname: yamcs
+    container_name: yamcs-grafana-demo-yamcs
+    working_dir: /workspace
+    command: "./mvnw yamcs:run"
+    environment:
+      YAMCS_TC_HOST: simulator
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    volumes:
+      - ../:/workspace
+    ports:
+      - "8090:8090"
+      - "10015:10015/udp"
+    networks:
+      - demo
+
+  simulator:
+    build:
+      context: ..
+      dockerfile: docker/yamcs/Simulator.Dockerfile
+    hostname: simulator
+    container_name: yamcs-grafana-demo-simulator
+    working_dir: /workspace
+    command: "python3 simulator.py --tm_host yamcs --tc_host 0.0.0.0"
+    volumes:
+      - ../:/workspace:ro
+    networks:
+      - demo
+
+  grafana:
+    image: grafana/grafana:latest
+    hostname: grafana
+    container_name: yamcs-grafana-demo-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_PLUGINS_PREINSTALL: jaops-yamcs-app
+    depends_on:
+      yamcs:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - demo
+
+networks:
+  demo:
+    driver: bridge

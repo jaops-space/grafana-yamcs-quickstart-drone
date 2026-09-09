@@ -1,0 +1,6 @@
+.git
+target
+__pycache__
+*.py[cod]
+docker/all.log
+yamcs-data

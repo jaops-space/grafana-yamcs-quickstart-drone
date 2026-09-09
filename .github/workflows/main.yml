@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0'  # Runs every Sunday at midnight
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+
+      - name: Start Yamcs demo stack
+        run: make wait-for-yamcs
+        working-directory: ./docker
+
+      - name: Collect Docker logs
+        if: always()
+        run: docker compose -f compose.yaml logs > all.log
+        working-directory: ./docker
+
+      - name: Archive Docker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs
+          path: docker/all.log

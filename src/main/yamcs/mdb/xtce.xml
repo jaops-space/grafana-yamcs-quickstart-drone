@@ -1,0 +1,1218 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="drone" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="JAOPS Yamcs/Grafana drone quickstart">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <AggregateParameterType name="CCSDS_Packet_ID_Type">
+        <MemberList>
+          <Member name="Version" typeRef="CCSDS_Version_Type" />
+          <Member name="Type" typeRef="CCSDS_Type_Type" />
+          <Member name="SecHdrFlag" typeRef="CCSDS_Sec_Hdr_Flag_Type" />
+          <Member name="APID" typeRef="CCSDS_APID_Type" />
+        </MemberList>
+      </AggregateParameterType>
+      <IntegerParameterType name="CCSDS_Version_Type" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="3" />
+      </IntegerParameterType>
+      <BooleanParameterType name="CCSDS_Type_Type" zeroStringValue="TM" oneStringValue="TC">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="1" />
+      </BooleanParameterType>
+      <BooleanParameterType name="CCSDS_Sec_Hdr_Flag_Type" zeroStringValue="NotPresent" oneStringValue="Present">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="1" />
+      </BooleanParameterType>
+      <IntegerParameterType name="CCSDS_APID_Type" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="11" />
+      </IntegerParameterType>
+      <AggregateParameterType name="CCSDS_Packet_Sequence_Type">
+        <MemberList>
+          <Member name="GroupFlags" typeRef="CCSDS_Group_Flags_Type" />
+          <Member name="Count" typeRef="CCSDS_Source_Sequence_Count_Type" />
+        </MemberList>
+      </AggregateParameterType>
+      <EnumeratedParameterType name="CCSDS_Group_Flags_Type">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="2" />
+        <EnumerationList>
+          <Enumeration value="0" label="Continuation" />
+          <Enumeration value="1" label="First" />
+          <Enumeration value="2" label="Last" />
+          <Enumeration value="3" label="Standalone" />
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="CCSDS_Source_Sequence_Count_Type" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="14" />
+      </IntegerParameterType>
+      <IntegerParameterType name="CCSDS_Packet_Length_Type" signed="false" initialValue="0">
+        <UnitSet>
+          <Unit description="Size">Octets</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" />
+      </IntegerParameterType>
+      <IntegerParameterType name="uint32_t" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="32" />
+      </IntegerParameterType>
+      <FloatParameterType name="float_t">
+        <UnitSet />
+        <FloatDataEncoding sizeInBits="32" />
+      </FloatParameterType>
+      <FloatParameterType name="BatteryVoltageType" sizeInBits="32">
+        <UnitSet>
+          <Unit description="Electrical potential">V</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" />
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="27.2" maxInclusive="34.0" />
+            <CriticalRange minInclusive="25.6" maxInclusive="34.4" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="BatteryTemperatureType" sizeInBits="32">
+        <UnitSet>
+          <Unit>°C</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" />
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="-10" maxInclusive="55" />
+            <CriticalRange minInclusive="-20" maxInclusive="70" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <BooleanParameterType name="bool_t">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" />
+      </BooleanParameterType>
+      <AggregateParameterType name="vec3_t">
+        <MemberList>
+          <Member name="x" typeRef="float_t" />
+          <Member name="y" typeRef="float_t" />
+          <Member name="z" typeRef="float_t" />
+        </MemberList>
+      </AggregateParameterType>
+      <EnumeratedParameterType name="EnumerationTest">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="3" />
+        <EnumerationList>
+          <Enumeration value="0" label="ENUM_VALUE_0" />
+          <Enumeration value="1" label="ENUM_VALUE_1" />
+          <Enumeration value="2" label="ENUM_VALUE_2" />
+          <Enumeration value="3" label="ENUM_VALUE_3" />
+          <Enumeration value="4" label="ENUM_VALUE_4" />
+          <Enumeration value="5" label="ENUM_VALUE_5" />
+          <Enumeration value="6" label="ENUM_VALUE_6" />
+          <Enumeration value="7" label="ENUM_VALUE_7" />
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="SecondsType" signed="false">
+        <UnitSet>
+          <Unit>s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+      </IntegerParameterType>
+      <IntegerParameterType name="UInt16Type" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+      </IntegerParameterType>
+      <IntegerParameterType name="UInt8Type" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      </IntegerParameterType>
+      <BooleanParameterType name="EnabledType" zeroStringValue="DISABLED" oneStringValue="ENABLED">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      </BooleanParameterType>
+      <BooleanParameterType name="HealthyType" zeroStringValue="NO" oneStringValue="YES">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      </BooleanParameterType>
+      <StringParameterType name="Label16Type">
+        <StringDataEncoding encoding="UTF-8">
+          <SizeInBits>
+            <Fixed>
+              <FixedValue>128</FixedValue>
+            </Fixed>
+            <TerminationChar>00</TerminationChar>
+          </SizeInBits>
+        </StringDataEncoding>
+      </StringParameterType>
+      <EnumeratedParameterType name="FlightModeType">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="0" label="STANDBY" />
+          <Enumeration value="1" label="ARMED" />
+          <Enumeration value="2" label="TAKEOFF" />
+          <Enumeration value="3" label="SURVEY" />
+          <Enumeration value="4" label="RETURN_TO_HOME" />
+          <Enumeration value="5" label="LANDING" />
+          <Enumeration value="6" label="CHARGING" />
+          <Enumeration value="7" label="EMERGENCY" />
+        </EnumerationList>
+        <DefaultAlarm minViolations="2">
+          <EnumerationAlarmList>
+            <EnumerationAlarm enumerationLabel="EMERGENCY" alarmLevel="critical" />
+          </EnumerationAlarmList>
+        </DefaultAlarm>
+      </EnumeratedParameterType>
+      <EnumeratedParameterType name="MotorStatusType">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="0" label="STOPPED" />
+          <Enumeration value="1" label="RUNNING" />
+          <Enumeration value="2" label="DEGRADED" />
+          <Enumeration value="3" label="FAULT" />
+        </EnumerationList>
+        <DefaultAlarm minViolations="2">
+          <EnumerationAlarmList>
+            <EnumerationAlarm enumerationLabel="DEGRADED" alarmLevel="warning" />
+            <EnumerationAlarm enumerationLabel="FAULT" alarmLevel="critical" />
+          </EnumerationAlarmList>
+        </DefaultAlarm>
+      </EnumeratedParameterType>
+      <EnumeratedParameterType name="PowerFaultType">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="0" label="NONE" />
+          <Enumeration value="1" label="OVERCURRENT" />
+          <Enumeration value="2" label="UNDERVOLTAGE" />
+          <Enumeration value="3" label="DISCONNECTED" />
+        </EnumerationList>
+        <DefaultAlarm minViolations="2">
+          <EnumerationAlarmList>
+            <EnumerationAlarm enumerationLabel="OVERCURRENT" alarmLevel="warning" />
+            <EnumerationAlarm enumerationLabel="UNDERVOLTAGE" alarmLevel="critical" />
+            <EnumerationAlarm enumerationLabel="DISCONNECTED" alarmLevel="critical" />
+          </EnumerationAlarmList>
+        </DefaultAlarm>
+      </EnumeratedParameterType>
+      <EnumeratedParameterType name="CommandResultType">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="0" label="NONE" />
+          <Enumeration value="1" label="ACCEPTED" />
+          <Enumeration value="2" label="REJECTED" />
+          <Enumeration value="3" label="FAILED" />
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="AdcCountType" signed="false">
+        <UnitSet>
+          <Unit>count</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+      </IntegerParameterType>
+      <IntegerParameterType name="SignedAdcCountType" signed="true">
+        <UnitSet>
+          <Unit>count</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" />
+      </IntegerParameterType>
+      <FloatParameterType name="PackVoltageType" sizeInBits="32">
+        <UnitSet>
+          <Unit description="Electrical potential">V</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.01" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <ValidRange minInclusive="0" maxInclusive="36" />
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="27.2" maxInclusive="34.0" />
+            <CriticalRange minInclusive="25.6" maxInclusive="34.4" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="PackCurrentType" sizeInBits="32">
+        <UnitSet>
+          <Unit description="Electrical current">A</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.01" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="-22" maxInclusive="55" />
+            <CriticalRange minInclusive="-25" maxInclusive="65" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="TemperatureType" sizeInBits="32">
+        <UnitSet>
+          <Unit>°C</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.1" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="-10" maxInclusive="55" />
+            <CriticalRange minInclusive="-20" maxInclusive="70" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="MotorTemperatureType" sizeInBits="32">
+        <UnitSet>
+          <Unit>°C</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.1" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="-10" maxInclusive="75" />
+            <CriticalRange minInclusive="-20" maxInclusive="90" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="CellVoltageType" sizeInBits="32">
+        <UnitSet>
+          <Unit>V</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.001" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="3.4" maxInclusive="4.25" />
+            <CriticalRange minInclusive="3.2" maxInclusive="4.3" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="MotorCurrentType" sizeInBits="32">
+        <UnitSet>
+          <Unit>A</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.01" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="0" maxInclusive="18" />
+            <CriticalRange minInclusive="0" maxInclusive="24" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="MilliVoltType" sizeInBits="32">
+        <UnitSet>
+          <Unit>V</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.001" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="MilliAmpType" sizeInBits="32">
+        <UnitSet>
+          <Unit>A</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.001" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="MilliGType" sizeInBits="32">
+        <UnitSet>
+          <Unit>g</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+          <DefaultCalibrator>
+            <PolynomialCalibrator>
+              <Term exponent="1" coefficient="0.001" />
+            </PolynomialCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="PercentType" sizeInBits="32">
+        <UnitSet>
+          <Unit>%</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <ValidRange minInclusive="0" maxInclusive="100" />
+      </FloatParameterType>
+      <FloatParameterType name="StateOfChargeType" sizeInBits="32">
+        <UnitSet>
+          <Unit>%</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <ValidRange minInclusive="0" maxInclusive="100" />
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="25" maxInclusive="100" />
+            <CriticalRange minInclusive="15" maxInclusive="100" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <IntegerParameterType name="RpmType" signed="false">
+        <UnitSet>
+          <Unit>rpm</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <CriticalRange minInclusive="0" maxInclusive="14000" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </IntegerParameterType>
+      <FloatParameterType name="FloatType" sizeInBits="32">
+        <UnitSet />
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="AngleType" sizeInBits="32">
+        <UnitSet>
+          <Unit>deg</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="AngularRateType" sizeInBits="32">
+        <UnitSet>
+          <Unit>deg/s</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="AltitudeType" sizeInBits="32">
+        <UnitSet>
+          <Unit>m</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+        <DefaultAlarm minViolations="3">
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="-2" maxInclusive="110" />
+            <CriticalRange minInclusive="-5" maxInclusive="120" />
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
+      <FloatParameterType name="SpeedType" sizeInBits="32">
+        <UnitSet>
+          <Unit>m/s</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="LatitudeType" sizeInBits="32">
+        <UnitSet>
+          <Unit>deg</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="LongitudeType" sizeInBits="32">
+        <UnitSet>
+          <Unit>deg</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="PowerType" sizeInBits="64">
+        <UnitSet>
+          <Unit>W</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <FloatParameterType name="EnergyType" sizeInBits="64">
+        <UnitSet>
+          <Unit>Wh</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985" />
+      </FloatParameterType>
+      <ArrayParameterType name="CellVoltageArrayType" arrayTypeRef="CellVoltageType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>7</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <ArrayParameterType name="RailVoltageArrayType" arrayTypeRef="MilliVoltType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>2</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <ArrayParameterType name="BranchCurrentArrayType" arrayTypeRef="MilliAmpType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>3</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <ArrayParameterType name="EnabledArrayType" arrayTypeRef="EnabledType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>3</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <ArrayParameterType name="PowerFaultArrayType" arrayTypeRef="PowerFaultType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>3</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <ArrayParameterType name="VibrationMatrixType" arrayTypeRef="MilliGType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>3</FixedValue>
+            </EndingIndex>
+          </Dimension>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>2</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <AggregateParameterType name="MotorTelemetryType">
+        <MemberList>
+          <Member name="rpm" typeRef="RpmType" />
+          <Member name="current" typeRef="MotorCurrentType" />
+          <Member name="temperature" typeRef="MotorTemperatureType" />
+          <Member name="throttle" typeRef="PercentType" />
+          <Member name="status" typeRef="MotorStatusType" />
+        </MemberList>
+      </AggregateParameterType>
+      <ArrayParameterType name="MotorArrayType" arrayTypeRef="MotorTelemetryType">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <FixedValue>3</FixedValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayParameterType>
+      <AggregateParameterType name="AttitudeType">
+        <MemberList>
+          <Member name="roll" typeRef="AngleType" />
+          <Member name="pitch" typeRef="AngleType" />
+          <Member name="yaw" typeRef="AngleType" />
+        </MemberList>
+      </AggregateParameterType>
+      <AggregateParameterType name="AngularRatesType">
+        <MemberList>
+          <Member name="roll" typeRef="AngularRateType" />
+          <Member name="pitch" typeRef="AngularRateType" />
+          <Member name="yaw" typeRef="AngularRateType" />
+        </MemberList>
+      </AggregateParameterType>
+      <AggregateParameterType name="NavigationType">
+        <MemberList>
+          <Member name="latitude" typeRef="LatitudeType" />
+          <Member name="longitude" typeRef="LongitudeType" />
+          <Member name="altitude" typeRef="AltitudeType" />
+          <Member name="groundSpeed" typeRef="SpeedType" />
+        </MemberList>
+      </AggregateParameterType>
+      <AggregateParameterType name="PowerDistributionType">
+        <MemberList>
+          <Member name="railVoltages" typeRef="RailVoltageArrayType" />
+          <Member name="branchCurrents" typeRef="BranchCurrentArrayType" />
+          <Member name="branchEnabled" typeRef="EnabledArrayType" />
+          <Member name="branchFaults" typeRef="PowerFaultArrayType" />
+        </MemberList>
+      </AggregateParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="CCSDS_Packet_ID" parameterTypeRef="CCSDS_Packet_ID_Type" />
+      <Parameter name="CCSDS_Packet_Sequence" parameterTypeRef="CCSDS_Packet_Sequence_Type" />
+      <Parameter name="CCSDS_Packet_Length" parameterTypeRef="CCSDS_Packet_Length_Type" />
+      <Parameter name="EpochUSNO" parameterTypeRef="float_t" />
+      <Parameter name="OrbitNumberCumulative" parameterTypeRef="uint32_t" />
+      <Parameter name="ElapsedSeconds" parameterTypeRef="uint32_t" />
+      <Parameter name="A" parameterTypeRef="float_t" />
+      <Parameter name="Height" parameterTypeRef="float_t" />
+      <Parameter name="Position" parameterTypeRef="vec3_t" />
+      <Parameter name="Velocity" parameterTypeRef="vec3_t" />
+      <Parameter name="Latitude" parameterTypeRef="float_t" />
+      <Parameter name="Longitude" parameterTypeRef="float_t" />
+      <Parameter name="Battery1_Voltage" parameterTypeRef="BatteryVoltageType" />
+      <Parameter name="Battery2_Voltage" parameterTypeRef="BatteryVoltageType" />
+      <Parameter name="Battery1_Temp" parameterTypeRef="BatteryTemperatureType" />
+      <Parameter name="Battery2_Temp" parameterTypeRef="BatteryTemperatureType" />
+      <Parameter name="Magnetometer" parameterTypeRef="vec3_t" />
+      <Parameter name="Sunsensor" parameterTypeRef="float_t" />
+      <Parameter name="Sunsensor_Beta" parameterTypeRef="float_t">
+        <ParameterProperties dataSource="derived" />
+      </Parameter>
+      <Parameter name="Gyro" parameterTypeRef="vec3_t" />
+      <Parameter name="Detector_Temp" parameterTypeRef="float_t" />
+      <Parameter name="Shadow" parameterTypeRef="bool_t" />
+      <Parameter name="Contact_Golbasi_GS" parameterTypeRef="bool_t" />
+      <Parameter name="Contact_Svalbard" parameterTypeRef="bool_t" />
+      <Parameter name="Payload_Status" parameterTypeRef="bool_t" />
+      <Parameter name="Payload_Error_Flag" parameterTypeRef="bool_t" />
+      <Parameter name="ADCS_Error_Flag" parameterTypeRef="bool_t" />
+      <Parameter name="CDHS_Error_Flag" parameterTypeRef="bool_t" />
+      <Parameter name="COMMS_Error_Flag" parameterTypeRef="bool_t" />
+      <Parameter name="EPS_Error_Flag" parameterTypeRef="bool_t" />
+      <Parameter name="COMMS_Status" parameterTypeRef="bool_t" />
+      <Parameter name="CDHS_Status" parameterTypeRef="bool_t" />
+      <Parameter name="Mode_Night" parameterTypeRef="bool_t" />
+      <Parameter name="Mode_Day" parameterTypeRef="bool_t" />
+      <Parameter name="Mode_Payload" parameterTypeRef="bool_t" />
+      <Parameter name="Mode_XBand" parameterTypeRef="bool_t" />
+      <Parameter name="Mode_SBand" parameterTypeRef="bool_t" />
+      <Parameter name="Mode_Safe" parameterTypeRef="bool_t" />
+      <Parameter name="Enum_Para_1" parameterTypeRef="EnumerationTest" />
+      <Parameter name="Enum_Para_2" parameterTypeRef="EnumerationTest" />
+      <Parameter name="Enum_Para_3" parameterTypeRef="EnumerationTest" />
+      <Parameter name="MissionElapsedTime" parameterTypeRef="SecondsType" />
+      <Parameter name="FlightMode" parameterTypeRef="FlightModeType" />
+      <Parameter name="Armed" parameterTypeRef="EnabledType" />
+      <Parameter name="FailsafeActive" parameterTypeRef="HealthyType" />
+      <Parameter name="VehicleCallsign" parameterTypeRef="Label16Type" />
+      <Parameter name="BatteryPackVoltageADC" parameterTypeRef="AdcCountType" />
+      <Parameter name="BatteryPackVoltage" parameterTypeRef="PackVoltageType" />
+      <Parameter name="BatteryPackCurrentADC" parameterTypeRef="SignedAdcCountType" />
+      <Parameter name="BatteryPackCurrent" parameterTypeRef="PackCurrentType" />
+      <Parameter name="BatteryStateOfCharge" parameterTypeRef="StateOfChargeType" />
+      <Parameter name="BatteryTemperatureADC" parameterTypeRef="SignedAdcCountType" />
+      <Parameter name="BatteryTemperature" parameterTypeRef="TemperatureType" />
+      <Parameter name="BatteryCellVoltages" parameterTypeRef="CellVoltageArrayType" />
+      <Parameter name="Motors" parameterTypeRef="MotorArrayType" />
+      <Parameter name="Motor1Temperature" parameterTypeRef="MotorTemperatureType" />
+      <Parameter name="Motor2Temperature" parameterTypeRef="MotorTemperatureType" />
+      <Parameter name="Motor3Temperature" parameterTypeRef="MotorTemperatureType" />
+      <Parameter name="Motor4Temperature" parameterTypeRef="MotorTemperatureType" />
+      <Parameter name="Motor1Status" parameterTypeRef="MotorStatusType" />
+      <Parameter name="Motor2Status" parameterTypeRef="MotorStatusType" />
+      <Parameter name="Motor3Status" parameterTypeRef="MotorStatusType" />
+      <Parameter name="Motor4Status" parameterTypeRef="MotorStatusType" />
+      <Parameter name="Attitude" parameterTypeRef="AttitudeType" />
+      <Parameter name="AngularRates" parameterTypeRef="AngularRatesType" />
+      <Parameter name="Navigation" parameterTypeRef="NavigationType" />
+      <Parameter name="PowerDistribution" parameterTypeRef="PowerDistributionType" />
+      <Parameter name="PropulsionPowerFault" parameterTypeRef="PowerFaultType" />
+      <Parameter name="MotorPowerFault" parameterTypeRef="PowerFaultType" />
+      <Parameter name="AvionicsPowerFault" parameterTypeRef="PowerFaultType" />
+      <Parameter name="MotorVibrationSpectrum" parameterTypeRef="VibrationMatrixType" />
+      <Parameter name="FlightPhase" parameterTypeRef="Label16Type" />
+      <Parameter name="LastCommandId" parameterTypeRef="UInt16Type" />
+      <Parameter name="LastCommandResult" parameterTypeRef="CommandResultType" />
+      <Parameter name="TargetAltitude" parameterTypeRef="AltitudeType" />
+      <Parameter name="BatteryPower" parameterTypeRef="PowerType">
+        <ParameterProperties dataSource="derived" />
+      </Parameter>
+      <Parameter name="BatteryEnergyRemaining" parameterTypeRef="EnergyType">
+        <ParameterProperties dataSource="derived" />
+      </Parameter>
+      <Parameter name="FlightReady" parameterTypeRef="HealthyType">
+        <ParameterProperties dataSource="derived" />
+      </Parameter>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer abstract="true" name="CCSDSPacket">
+        <EntryList>
+          <ParameterRefEntry parameterRef="CCSDS_Packet_ID" />
+          <ParameterRefEntry parameterRef="CCSDS_Packet_Sequence" />
+          <ParameterRefEntry parameterRef="CCSDS_Packet_Length" />
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="TelemetryPacket">
+        <EntryList />
+        <BaseContainer containerRef="CCSDSPacket">
+          <RestrictionCriteria>
+            <ComparisonList>
+              <Comparison value="0" parameterRef="CCSDS_Packet_ID/Version" />
+              <Comparison value="TM" parameterRef="CCSDS_Packet_ID/Type" />
+            </ComparisonList>
+          </RestrictionCriteria>
+        </BaseContainer>
+      </SequenceContainer>
+      <SequenceContainer name="BaseTelemetry">
+        <EntryList>
+          <ParameterRefEntry parameterRef="EpochUSNO" />
+          <ParameterRefEntry parameterRef="OrbitNumberCumulative" />
+          <ParameterRefEntry parameterRef="ElapsedSeconds" />
+          <ParameterRefEntry parameterRef="A" />
+          <ParameterRefEntry parameterRef="Height" />
+          <ParameterRefEntry parameterRef="Position" />
+          <ParameterRefEntry parameterRef="Velocity" />
+          <ParameterRefEntry parameterRef="Latitude" />
+          <ParameterRefEntry parameterRef="Longitude" />
+          <ParameterRefEntry parameterRef="Battery1_Voltage" />
+          <ParameterRefEntry parameterRef="Battery2_Voltage" />
+          <ParameterRefEntry parameterRef="Battery1_Temp" />
+          <ParameterRefEntry parameterRef="Battery2_Temp" />
+          <ParameterRefEntry parameterRef="Magnetometer" />
+          <ParameterRefEntry parameterRef="Sunsensor" />
+          <ParameterRefEntry parameterRef="Gyro" />
+          <ParameterRefEntry parameterRef="Detector_Temp" />
+          <ParameterRefEntry parameterRef="Shadow" />
+          <ParameterRefEntry parameterRef="Contact_Golbasi_GS" />
+          <ParameterRefEntry parameterRef="Contact_Svalbard" />
+          <ParameterRefEntry parameterRef="Payload_Status" />
+          <ParameterRefEntry parameterRef="Payload_Error_Flag" />
+          <ParameterRefEntry parameterRef="ADCS_Error_Flag" />
+          <ParameterRefEntry parameterRef="CDHS_Error_Flag" />
+          <ParameterRefEntry parameterRef="COMMS_Error_Flag" />
+          <ParameterRefEntry parameterRef="EPS_Error_Flag" />
+          <ParameterRefEntry parameterRef="COMMS_Status" />
+          <ParameterRefEntry parameterRef="CDHS_Status" />
+          <ParameterRefEntry parameterRef="Mode_Night" />
+          <ParameterRefEntry parameterRef="Mode_Day" />
+          <ParameterRefEntry parameterRef="Mode_Payload" />
+          <ParameterRefEntry parameterRef="Mode_XBand" />
+          <ParameterRefEntry parameterRef="Mode_SBand" />
+          <ParameterRefEntry parameterRef="Mode_Safe" />
+          <ParameterRefEntry parameterRef="Enum_Para_1">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>29</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Enum_Para_2">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>27</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Enum_Para_3">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>25</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+        <BaseContainer containerRef="TelemetryPacket">
+          <RestrictionCriteria>
+            <ComparisonList>
+              <Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
+              <Comparison value="100" parameterRef="CCSDS_Packet_ID/APID" />
+            </ComparisonList>
+          </RestrictionCriteria>
+        </BaseContainer>
+      </SequenceContainer>
+      <SequenceContainer name="DroneTelemetry">
+        <EntryList>
+          <ParameterRefEntry parameterRef="MissionElapsedTime">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>984</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="FlightMode" />
+          <ParameterRefEntry parameterRef="Armed" />
+          <ParameterRefEntry parameterRef="FailsafeActive" />
+          <ParameterRefEntry parameterRef="VehicleCallsign" />
+          <ParameterRefEntry parameterRef="BatteryPackVoltageADC" />
+          <ParameterRefEntry parameterRef="BatteryPackVoltage" />
+          <ParameterRefEntry parameterRef="BatteryPackCurrentADC" />
+          <ParameterRefEntry parameterRef="BatteryPackCurrent" />
+          <ParameterRefEntry parameterRef="BatteryStateOfCharge" />
+          <ParameterRefEntry parameterRef="BatteryTemperatureADC" />
+          <ParameterRefEntry parameterRef="BatteryTemperature" />
+          <ArrayParameterRefEntry parameterRef="BatteryCellVoltages" />
+          <ArrayParameterRefEntry parameterRef="Motors" />
+          <ParameterRefEntry parameterRef="Attitude" />
+          <ParameterRefEntry parameterRef="AngularRates" />
+          <ParameterRefEntry parameterRef="Navigation" />
+          <ParameterRefEntry parameterRef="PowerDistribution" />
+          <ArrayParameterRefEntry parameterRef="MotorVibrationSpectrum" />
+          <ParameterRefEntry parameterRef="FlightPhase" />
+          <ParameterRefEntry parameterRef="LastCommandId" />
+          <ParameterRefEntry parameterRef="LastCommandResult" />
+          <ParameterRefEntry parameterRef="TargetAltitude" />
+          <ParameterRefEntry parameterRef="Motor1Temperature">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1432</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor1Status">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1456</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor2Temperature">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1496</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor2Status">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1520</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor3Temperature">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1560</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor3Status">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1584</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor4Temperature">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1624</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Motor4Status">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>1648</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="PropulsionPowerFault">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>2120</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="MotorPowerFault">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>2128</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="AvionicsPowerFault">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>2136</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+        <BaseContainer containerRef="BaseTelemetry" />
+      </SequenceContainer>
+    </ContainerSet>
+    <AlgorithmSet>
+      <CustomAlgorithm name="copySunsensor">
+        <AlgorithmText language="java-expression">out0.setFloatValue(in.getEngValue().getFloatValue());</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="Sunsensor" inputName="in" />
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="Sunsensor_Beta" outputName="out0" />
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="Sunsensor" />
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="ComputeBatteryPower">
+        <AlgorithmText language="java-expression">out.setDoubleValue(voltage.getEngValue().getFloatValue() * current.getEngValue().getFloatValue());</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="BatteryPackVoltage" inputName="voltage" />
+          <InputParameterInstanceRef parameterRef="BatteryPackCurrent" inputName="current" />
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="BatteryPower" outputName="out" />
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="BatteryPackCurrent" />
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="ComputeBatteryEnergy">
+        <AlgorithmText language="java-expression">out.setDoubleValue(soc.getEngValue().getFloatValue() * 6.51);</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="BatteryStateOfCharge" inputName="soc" />
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="BatteryEnergyRemaining" outputName="out" />
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="BatteryStateOfCharge" />
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="ComputeFlightReady">
+        <AlgorithmText language="java-expression">out.setBooleanValue(soc.getEngValue().getFloatValue() &gt;= 25.0 &amp;&amp; !failsafe.getEngValue().getBooleanValue());</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="BatteryStateOfCharge" inputName="soc" />
+          <InputParameterInstanceRef parameterRef="FailsafeActive" inputName="failsafe" />
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="FlightReady" outputName="out" />
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="BatteryStateOfCharge" />
+        </TriggerSet>
+      </CustomAlgorithm>
+    </AlgorithmSet>
+  </TelemetryMetaData>
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <IntegerArgumentType name="CcsdsVersionArg" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="3" />
+      </IntegerArgumentType>
+      <BooleanArgumentType name="CcsdsTypeArg" zeroStringValue="TM" oneStringValue="TC">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="1" />
+      </BooleanArgumentType>
+      <BooleanArgumentType name="CcsdsHeaderArg" zeroStringValue="NotPresent" oneStringValue="Present">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="1" />
+      </BooleanArgumentType>
+      <IntegerArgumentType name="CcsdsApidArg" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="11" />
+      </IntegerArgumentType>
+      <EnumeratedArgumentType name="CcsdsGroupingArg">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="2" />
+        <EnumerationList>
+          <Enumeration value="3" label="Standalone" />
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <IntegerArgumentType name="CommandIdArg" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+      </IntegerArgumentType>
+      <IntegerArgumentType name="MotorIdArg" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <ValidRangeSet>
+          <ValidRange minInclusive="1" maxInclusive="4" />
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <IntegerArgumentType name="PercentArg" signed="false">
+        <UnitSet>
+          <Unit>%</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <ValidRangeSet>
+          <ValidRange minInclusive="0" maxInclusive="100" />
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <IntegerArgumentType name="DurationArg" signed="false">
+        <UnitSet>
+          <Unit>s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <ValidRangeSet>
+          <ValidRange minInclusive="1" maxInclusive="30" />
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <IntegerArgumentType name="RadiusArg" signed="false">
+        <UnitSet>
+          <Unit>m</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <ValidRangeSet>
+          <ValidRange minInclusive="20" maxInclusive="2000" />
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <FloatArgumentType name="AltitudeArg">
+        <UnitSet>
+          <Unit>m</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" />
+        <ValidRangeSet>
+          <ValidRange minInclusive="5" maxInclusive="120" />
+        </ValidRangeSet>
+      </FloatArgumentType>
+      <EnumeratedArgumentType name="FlightModeArg">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="1" label="ARMED" />
+          <Enumeration value="2" label="TAKEOFF" />
+          <Enumeration value="3" label="SURVEY" />
+          <Enumeration value="4" label="RETURN_TO_HOME" />
+          <Enumeration value="5" label="LANDING" />
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <EnumeratedArgumentType name="GeofenceActionArg">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="0" label="HOLD" />
+          <Enumeration value="1" label="RETURN_TO_HOME" />
+          <Enumeration value="2" label="LAND" />
+        </EnumerationList>
+      </EnumeratedArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      <MetaCommand name="DroneCommandPacket" abstract="true">
+        <ArgumentList>
+          <Argument name="CCSDS_Version" argumentTypeRef="CcsdsVersionArg" />
+          <Argument name="CCSDS_Type" argumentTypeRef="CcsdsTypeArg" />
+          <Argument name="CCSDS_Sec_Hdr_Flag" argumentTypeRef="CcsdsHeaderArg" />
+          <Argument name="CCSDS_APID" argumentTypeRef="CcsdsApidArg" />
+          <Argument name="CCSDS_Group_Flags" argumentTypeRef="CcsdsGroupingArg" />
+          <Argument name="CommandId" argumentTypeRef="CommandIdArg" />
+        </ArgumentList>
+        <CommandContainer name="DroneCommandPacket">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="CCSDS_Version" />
+            <ArgumentRefEntry argumentRef="CCSDS_Type" />
+            <ArgumentRefEntry argumentRef="CCSDS_Sec_Hdr_Flag" />
+            <ArgumentRefEntry argumentRef="CCSDS_APID" />
+            <ArgumentRefEntry argumentRef="CCSDS_Group_Flags" />
+            <FixedValueEntry name="SequenceCount" binaryValue="0000" sizeInBits="14" />
+            <FixedValueEntry name="PacketLength" binaryValue="0000" sizeInBits="16" />
+            <ArgumentRefEntry argumentRef="CommandId" />
+          </EntryList>
+        </CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="DroneCommand" abstract="true">
+        <BaseMetaCommand metaCommandRef="DroneCommandPacket">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CCSDS_Version" argumentValue="0" />
+            <ArgumentAssignment argumentName="CCSDS_Type" argumentValue="TC" />
+            <ArgumentAssignment argumentName="CCSDS_Sec_Hdr_Flag" argumentValue="NotPresent" />
+            <ArgumentAssignment argumentName="CCSDS_APID" argumentValue="201" />
+            <ArgumentAssignment argumentName="CCSDS_Group_Flags" argumentValue="Standalone" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <CommandContainer name="DroneCommand">
+          <EntryList />
+          <BaseContainer containerRef="DroneCommandPacket" />
+        </CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="Arm" shortDescription="Arm all four motors after health checks pass">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="10" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <CommandContainer name="Arm">
+          <EntryList />
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT5S">
+            <ComparisonList>
+              <Comparison parameterRef="FlightReady" value="YES" />
+              <Comparison parameterRef="Armed" value="DISABLED" />
+            </ComparisonList>
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
+        <VerifierSet>
+          <CompleteVerifier>
+            <Comparison parameterRef="Armed" value="ENABLED" />
+            <CheckWindow timeToStartChecking="PT0.2S" timeToStopChecking="PT5S" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+      <MetaCommand name="Disarm" shortDescription="Stop and disarm all motors">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="11" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <CommandContainer name="Disarm">
+          <EntryList />
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <VerifierSet>
+          <CompleteVerifier>
+            <Comparison parameterRef="Armed" value="DISABLED" />
+            <CheckWindow timeToStopChecking="PT5S" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+      <MetaCommand name="SetFlightMode" shortDescription="Select the flight-control mode">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="12" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="Mode" argumentTypeRef="FlightModeArg" />
+        </ArgumentList>
+        <CommandContainer name="SetFlightMode">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="Mode" />
+          </EntryList>
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT5S">
+            <Comparison parameterRef="Armed" value="ENABLED" />
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
+        <VerifierSet>
+          <CompleteVerifier>
+            <BooleanExpression>
+              <Condition>
+                <ArgumentInstanceRef argumentRef="Mode" />
+                <ComparisonOperator>==</ComparisonOperator>
+                <ParameterInstanceRef parameterRef="FlightMode" />
+              </Condition>
+            </BooleanExpression>
+            <CheckWindow timeToStopChecking="PT5S" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+      <MetaCommand name="SetTargetAltitude" shortDescription="Set the altitude target used by the flight controller">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="13" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="Altitude" argumentTypeRef="AltitudeArg" />
+        </ArgumentList>
+        <CommandContainer name="SetTargetAltitude">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="Altitude" />
+          </EntryList>
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT5S">
+            <Comparison parameterRef="Armed" value="ENABLED" />
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
+        <VerifierSet>
+          <CompleteVerifier>
+            <BooleanExpression>
+              <Condition>
+                <ArgumentInstanceRef argumentRef="Altitude" />
+                <ComparisonOperator>==</ComparisonOperator>
+                <ParameterInstanceRef parameterRef="TargetAltitude" />
+              </Condition>
+            </BooleanExpression>
+            <CheckWindow timeToStopChecking="PT5S" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+      <MetaCommand name="MotorTest" shortDescription="Run one motor at a limited throttle while disarmed">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="14" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="Motor" argumentTypeRef="MotorIdArg" />
+          <Argument name="Throttle" argumentTypeRef="PercentArg" />
+          <Argument name="Duration" argumentTypeRef="DurationArg" />
+        </ArgumentList>
+        <CommandContainer name="MotorTest">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="Motor" />
+            <ArgumentRefEntry argumentRef="Throttle" />
+            <ArgumentRefEntry argumentRef="Duration" />
+          </EntryList>
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT5S">
+            <Comparison parameterRef="Armed" value="DISABLED" />
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
+        <VerifierSet>
+          <CompleteVerifier>
+            <Comparison parameterRef="LastCommandId" value="14" />
+            <CheckWindow timeToStopChecking="PT5S" />
+            <ReturnParmRef parameterRef="LastCommandResult" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+      <MetaCommand name="ConfigureGeofence" shortDescription="Configure cylindrical flight limits and breach behavior">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="16" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="Radius" argumentTypeRef="RadiusArg" />
+          <Argument name="MaximumAltitude" argumentTypeRef="AltitudeArg" />
+          <Argument name="ReturnAltitude" argumentTypeRef="AltitudeArg" />
+          <Argument name="BreachAction" argumentTypeRef="GeofenceActionArg" />
+        </ArgumentList>
+        <CommandContainer name="ConfigureGeofence">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="Radius" />
+            <ArgumentRefEntry argumentRef="MaximumAltitude" />
+            <ArgumentRefEntry argumentRef="ReturnAltitude" />
+            <ArgumentRefEntry argumentRef="BreachAction" />
+          </EntryList>
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT5S">
+            <Comparison parameterRef="Armed" value="DISABLED" />
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
+        <VerifierSet>
+          <CompleteVerifier>
+            <Comparison parameterRef="LastCommandId" value="16" />
+            <CheckWindow timeToStopChecking="PT5S" />
+            <ReturnParmRef parameterRef="LastCommandResult" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+      <MetaCommand name="EmergencyLand" shortDescription="Immediately command a controlled emergency landing">
+        <BaseMetaCommand metaCommandRef="DroneCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="CommandId" argumentValue="17" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <CommandContainer name="EmergencyLand">
+          <EntryList />
+          <BaseContainer containerRef="DroneCommand" />
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="critical" reasonForWarning="The vehicle will leave its current mission and land immediately" />
+        <VerifierSet>
+          <CompleteVerifier>
+            <Comparison parameterRef="FlightMode" value="LANDING" />
+            <CheckWindow timeToStopChecking="PT5S" />
+          </CompleteVerifier>
+        </VerifierSet>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
+</SpaceSystem>

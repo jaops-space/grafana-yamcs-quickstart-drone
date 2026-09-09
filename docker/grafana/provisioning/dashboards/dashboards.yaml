@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: yamcs-grafana-quickstart
+    orgId: 1
+    folder: Yamcs Grafana Quickstart
+    type: file
+    allowUiUpdates: true
+    disableDeletion: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/quickstart

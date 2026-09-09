@@ -1,0 +1,270 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "jaops-yamcs-datasource",
+        "uid": "yamcs-demo"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/BatteryPackVoltage",
+          "refId": "A",
+          "type": "plot"
+        },
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/BatteryPackCurrent",
+          "refId": "B",
+          "type": "plot"
+        }
+      ],
+      "title": "battery pack",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "jaops-yamcs-datasource",
+        "uid": "yamcs-demo"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/Motors[0].rpm",
+          "refId": "A",
+          "type": "plot"
+        },
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/Motors[1].rpm",
+          "refId": "B",
+          "type": "plot"
+        },
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/Motors[2].rpm",
+          "refId": "C",
+          "type": "plot"
+        },
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/Motors[3].rpm",
+          "refId": "D",
+          "type": "plot"
+        }
+      ],
+      "title": "motor rpm",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "jaops-yamcs-datasource",
+        "uid": "yamcs-demo"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/BatteryStateOfCharge",
+          "refId": "A",
+          "type": "single"
+        }
+      ],
+      "title": "battery state of charge",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "jaops-yamcs-datasource",
+        "uid": "yamcs-demo"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/FlightMode",
+          "refId": "A",
+          "type": "single"
+        }
+      ],
+      "title": "flight mode",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "jaops-yamcs-datasource",
+        "uid": "yamcs-demo"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "endpoint": "demo_realtime",
+          "fields": [],
+          "parameter": "/drone/FlightReady",
+          "refId": "A",
+          "type": "single"
+        }
+      ],
+      "title": "flight ready",
+      "type": "stat"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": [
+    "yamcs",
+    "grafana",
+    "drone"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Yamcs Grafana Drone Quickstart",
+  "uid": "yamcs-grafana-drone",
+  "version": 1,
+  "weekStart": ""
+}
