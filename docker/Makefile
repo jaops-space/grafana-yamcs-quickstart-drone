@@ -7,9 +7,9 @@ MAKEFLAGS += --no-builtin-rules
 
 .DEFAULT_GOAL := help
 
-.PHONY: up down logs yamcs-shell grafana-shell simulator-shell wait-for-yamcs help
+.PHONY: up down logs yamcs-shell grafana-shell simulator-shell image-shell wait-for-yamcs help
 
-up: ## start Yamcs, the simulator, and Grafana
+up: ## start Yamcs, the simulator, the image generator, and Grafana
 	docker compose -f compose.yaml up --build
 
 down: ## stop the demo stack
@@ -26,6 +26,9 @@ grafana-shell: ## open a shell in the Grafana container
 
 simulator-shell: ## open a shell in the simulator container
 	docker compose -f compose.yaml exec simulator bash
+
+image-shell: ## open a shell in the image generator container
+	docker compose -f compose.yaml exec image-generator bash
 
 wait-for-yamcs: ## CI helper: wait until the Yamcs HTTP service is reachable
 	docker compose -f compose.yaml up -d --build yamcs simulator

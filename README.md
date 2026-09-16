@@ -1,4 +1,4 @@
-# Yamcs Grafana Quickstart
+# Grafana Yamcs Quickstart Drone
 
 This repository is a Yamcs + Grafana demo built around one coherent simulated
 drone system.
@@ -11,11 +11,12 @@ The demo uses:
 - one Yamcs instance: `demo`
 - one XTCE space system: `/drone`
 - one Python simulator sending deterministic CCSDS telemetry
-- one Grafana stack with the latest published `jaops-yamcs-app` plugin
+- one Python image generator publishing Yamcs bucket image URLs
+- one Grafana stack with the current GitHub release of `jaops-yamcs-app`
 
-## Quick start with Docker
+## Quick start
 
-Start Yamcs, the simulator, and Grafana:
+Start Yamcs, the simulator, the image generator, and Grafana:
 
 ```sh
 cd docker
@@ -33,39 +34,23 @@ Grafana login:
 admin / admin
 ```
 
-Grafana is provisioned with:
+Grafana is provisioned by this quickstart repo with one demo setup:
 
-- the latest published `jaops-yamcs-app` plugin
+- the latest configured GitHub release of `jaops-yamcs-app`
 - a `Yamcs Demo` datasource pointing to `demo/realtime`
-- a small starter dashboard under `Yamcs Grafana Quickstart`
+- the drone dashboard under `Yamcs Grafana Demo`
 
-## Native run
-
-Prerequisites:
-
-- Java 17+
-- Python 3.10+
-
-Compile:
+The plugin version is controlled from Docker Compose. Override it with:
 
 ```sh
-./mvnw compile
+export GRAFANA_YAMCS_PLUGIN_VERSION=1.1.1
 ```
 
-Start Yamcs:
+The image generator publishes camera frames at 2 FPS by default. Override it with:
 
 ```sh
-./mvnw yamcs:run
+export IMAGE_INTERVAL=0.25
 ```
-
-In another terminal, start telemetry:
-
-```sh
-python3 simulator.py
-```
-
-Yamcs listens on <http://localhost:8090>. The simulator sends telemetry at 1 Hz
-over UDP port `10015` and receives commands on UDP port `10025`.
 
 ## Demo model
 
@@ -78,6 +63,7 @@ The `/drone` MDB demonstrates:
 - booleans, enumerations, fixed strings, aggregates, arrays, arrays of
   aggregates, aggregates containing arrays, and a two-dimensional array
 - derived battery power, remaining energy, and flight-readiness parameters
+- local camera image parameters backed by the Yamcs `images` bucket
 - command arguments, valid ranges, transmission constraints, significance, and
   completion verification
 
@@ -85,6 +71,14 @@ The telemetry follows a repeating mission profile: standby, takeoff, survey,
 return-to-home, landing, and charging. A motor-3 bearing fault is included near
 the end of each survey phase to exercise warning/critical states and failsafe
 logic.
+
+The image generator renders a synthetic forward camera view over a perspective
+ground grid, using the same drone profile, and publishes these local parameters:
+
+- `/drone/CameraImageNumber`
+- `/drone/CameraImageStorageUrl`
+- `/drone/CameraImageUrl`
+- `/drone/CameraView`
 
 ## Commands
 
@@ -101,18 +95,10 @@ Included commands:
 - `/drone/ConfigureGeofence`
 - `/drone/EmergencyLand`
 
-## Regenerate telemetry
+## Development note
 
 After changing the deterministic flight model, regenerate `testdata.ccsds`:
 
 ```sh
-python3 generate_testdata.py
-```
-
-## Package Yamcs
-
-For a distributable Yamcs application:
-
-```sh
-./mvnw package
+docker compose -f docker/compose.yaml run --rm simulator python3 generate_testdata.py
 ```

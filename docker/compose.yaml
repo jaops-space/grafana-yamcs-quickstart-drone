@@ -1,4 +1,4 @@
-name: yamcs-grafana-quickstart
+name: grafana-yamcs-quickstart-drone
 
 services:
   yamcs:
@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: docker/yamcs/Dockerfile
     hostname: yamcs
-    container_name: yamcs-grafana-demo-yamcs
+    container_name: grafana-yamcs-quickstart-drone-yamcs
     working_dir: /workspace
     command: "./mvnw yamcs:run"
     environment:
@@ -19,6 +19,7 @@ services:
       start_period: 30s
     volumes:
       - ../:/workspace
+      - yamcs-images:/tmp/images
     ports:
       - "8090:8090"
       - "10015:10015/udp"
@@ -30,7 +31,7 @@ services:
       context: ..
       dockerfile: docker/yamcs/Simulator.Dockerfile
     hostname: simulator
-    container_name: yamcs-grafana-demo-simulator
+    container_name: grafana-yamcs-quickstart-drone-simulator
     working_dir: /workspace
     command: "python3 simulator.py --tm_host yamcs --tc_host 0.0.0.0"
     volumes:
@@ -38,17 +39,43 @@ services:
     networks:
       - demo
 
+  image-generator:
+    build:
+      context: ..
+      dockerfile: docker/yamcs/ImageGenerator.Dockerfile
+    hostname: image-generator
+    container_name: grafana-yamcs-quickstart-drone-image-generator
+    working_dir: /workspace
+    command: "python3 simulator/images/generate_images.py --yamcs-host yamcs:8090 --public-yamcs-url http://localhost:8090 --image-dir /images"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      IMAGE_INTERVAL: ${IMAGE_INTERVAL:-0.5}
+    depends_on:
+      yamcs:
+        condition: service_healthy
+    volumes:
+      - ../:/workspace:ro
+      - yamcs-images:/images
+    networks:
+      - demo
+
   grafana:
     image: grafana/grafana:latest
     hostname: grafana
-    container_name: yamcs-grafana-demo-grafana
+    container_name: grafana-yamcs-quickstart-drone-grafana
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_SECURITY_ALLOW_EMBEDDING: "true"
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
-      GF_PLUGINS_PREINSTALL: jaops-yamcs-app
+      GRAFANA_YAMCS_PLUGIN_VERSION: ${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}
+      GF_PLUGINS_PREINSTALL_SYNC: jaops-yamcs-app@${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}@https://github.com/jaops-space/grafana-yamcs-jaops/releases/download/v${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}/jaops-yamcs-app-${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}.zip
+      YAMCS_HOST: ${YAMCS_HOST:-yamcs:8090}
+      YAMCS_INSTANCE: ${YAMCS_INSTANCE:-demo}
+      YAMCS_PROCESSOR: ${YAMCS_PROCESSOR:-realtime}
+      YAMCS_USERNAME: ${YAMCS_USERNAME:-admin}
+      YAMCS_PASSWORD: ${YAMCS_PASSWORD:-admin}
     depends_on:
       yamcs:
         condition: service_healthy
@@ -62,3 +89,6 @@ services:
 networks:
   demo:
     driver: bridge
+
+volumes:
+  yamcs-images:

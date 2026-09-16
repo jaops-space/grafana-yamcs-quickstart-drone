@@ -152,19 +152,6 @@ def generate(source: Path, output: Path) -> tuple[int, int]:
     packets = []
     for second, packet in enumerate(iter_legacy_packets(source.read_bytes())):
         extension = drone_extension(second)
-        pack_voltage = struct.unpack_from(">H", extension, 25)[0] * 0.01
-        battery_temperature = struct.unpack_from(">h", extension, 34)[0] * 0.1
-        # Keep the original quickstart battery channels as two parallel 8S
-        # modules feeding the drone bus instead of unrelated legacy values.
-        struct.pack_into(
-            ">4f",
-            packet,
-            58,
-            pack_voltage + 0.03,
-            pack_voltage - 0.02,
-            battery_temperature + 0.4,
-            battery_temperature - 0.3,
-        )
         packet.extend(extension)
         struct.pack_into(">H", packet, 4, len(packet) - 7)
         packets.append(packet)

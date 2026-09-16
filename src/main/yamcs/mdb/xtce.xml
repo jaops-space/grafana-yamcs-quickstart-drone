@@ -60,30 +60,6 @@
         <UnitSet />
         <FloatDataEncoding sizeInBits="32" />
       </FloatParameterType>
-      <FloatParameterType name="BatteryVoltageType" sizeInBits="32">
-        <UnitSet>
-          <Unit description="Electrical potential">V</Unit>
-        </UnitSet>
-        <FloatDataEncoding sizeInBits="32" />
-        <DefaultAlarm minViolations="3">
-          <StaticAlarmRanges>
-            <WarningRange minInclusive="27.2" maxInclusive="34.0" />
-            <CriticalRange minInclusive="25.6" maxInclusive="34.4" />
-          </StaticAlarmRanges>
-        </DefaultAlarm>
-      </FloatParameterType>
-      <FloatParameterType name="BatteryTemperatureType" sizeInBits="32">
-        <UnitSet>
-          <Unit>°C</Unit>
-        </UnitSet>
-        <FloatDataEncoding sizeInBits="32" />
-        <DefaultAlarm minViolations="3">
-          <StaticAlarmRanges>
-            <WarningRange minInclusive="-10" maxInclusive="55" />
-            <CriticalRange minInclusive="-20" maxInclusive="70" />
-          </StaticAlarmRanges>
-        </DefaultAlarm>
-      </FloatParameterType>
       <BooleanParameterType name="bool_t">
         <UnitSet />
         <IntegerDataEncoding sizeInBits="8" />
@@ -136,6 +112,26 @@
           <SizeInBits>
             <Fixed>
               <FixedValue>128</FixedValue>
+            </Fixed>
+            <TerminationChar>00</TerminationChar>
+          </SizeInBits>
+        </StringDataEncoding>
+      </StringParameterType>
+      <StringParameterType name="Label32Type">
+        <StringDataEncoding encoding="UTF-8">
+          <SizeInBits>
+            <Fixed>
+              <FixedValue>256</FixedValue>
+            </Fixed>
+            <TerminationChar>00</TerminationChar>
+          </SizeInBits>
+        </StringDataEncoding>
+      </StringParameterType>
+      <StringParameterType name="Url256Type">
+        <StringDataEncoding encoding="UTF-8">
+          <SizeInBits>
+            <Fixed>
+              <FixedValue>2048</FixedValue>
             </Fixed>
             <TerminationChar>00</TerminationChar>
           </SizeInBits>
@@ -594,10 +590,6 @@
       <Parameter name="Velocity" parameterTypeRef="vec3_t" />
       <Parameter name="Latitude" parameterTypeRef="float_t" />
       <Parameter name="Longitude" parameterTypeRef="float_t" />
-      <Parameter name="Battery1_Voltage" parameterTypeRef="BatteryVoltageType" />
-      <Parameter name="Battery2_Voltage" parameterTypeRef="BatteryVoltageType" />
-      <Parameter name="Battery1_Temp" parameterTypeRef="BatteryTemperatureType" />
-      <Parameter name="Battery2_Temp" parameterTypeRef="BatteryTemperatureType" />
       <Parameter name="Magnetometer" parameterTypeRef="vec3_t" />
       <Parameter name="Sunsensor" parameterTypeRef="float_t" />
       <Parameter name="Sunsensor_Beta" parameterTypeRef="float_t">
@@ -668,6 +660,18 @@
       <Parameter name="FlightReady" parameterTypeRef="HealthyType">
         <ParameterProperties dataSource="derived" />
       </Parameter>
+      <Parameter name="CameraImageNumber" parameterTypeRef="uint32_t">
+        <ParameterProperties dataSource="local" />
+      </Parameter>
+      <Parameter name="CameraImageStorageUrl" parameterTypeRef="Url256Type">
+        <ParameterProperties dataSource="local" />
+      </Parameter>
+      <Parameter name="CameraImageUrl" parameterTypeRef="Url256Type">
+        <ParameterProperties dataSource="local" />
+      </Parameter>
+      <Parameter name="CameraView" parameterTypeRef="Label32Type">
+        <ParameterProperties dataSource="local" />
+      </Parameter>
     </ParameterSet>
     <ContainerSet>
       <SequenceContainer abstract="true" name="CCSDSPacket">
@@ -699,11 +703,11 @@
           <ParameterRefEntry parameterRef="Velocity" />
           <ParameterRefEntry parameterRef="Latitude" />
           <ParameterRefEntry parameterRef="Longitude" />
-          <ParameterRefEntry parameterRef="Battery1_Voltage" />
-          <ParameterRefEntry parameterRef="Battery2_Voltage" />
-          <ParameterRefEntry parameterRef="Battery1_Temp" />
-          <ParameterRefEntry parameterRef="Battery2_Temp" />
-          <ParameterRefEntry parameterRef="Magnetometer" />
+          <ParameterRefEntry parameterRef="Magnetometer">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>592</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="Sunsensor" />
           <ParameterRefEntry parameterRef="Gyro" />
           <ParameterRefEntry parameterRef="Detector_Temp" />
