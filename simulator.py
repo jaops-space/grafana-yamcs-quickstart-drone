@@ -9,7 +9,9 @@ import struct
 
 from struct import unpack_from
 from threading import Lock, Thread
-from time import monotonic, sleep
+from time import sleep
+
+from drone_model import ARMED, EMERGENCY, EXTENSION_SIZE, NAMES, STANDBY, DroneModel
 
 parser = argparse.ArgumentParser(description='Yamcs Simulator')
 parser.add_argument('--testdata', type=str, default='testdata.ccsds', help='simulated testdata.ccsds data')
@@ -38,39 +40,7 @@ TC_RECEIVE_ADDRESS = args['tc_host']
 TC_RECEIVE_PORT    = args['tc_port']
 
 LEGACY_PACKET_SIZE = 123
-DRONE_MODE_OFFSET = LEGACY_PACKET_SIZE + 4
-DRONE_ARMED_OFFSET = LEGACY_PACKET_SIZE + 5
-DRONE_FAILSAFE_OFFSET = LEGACY_PACKET_SIZE + 6
-DRONE_MOTORS_OFFSET = LEGACY_PACKET_SIZE + 52
-DRONE_POSITION_OFFSET = LEGACY_PACKET_SIZE + 108
-DRONE_ALTITUDE_OFFSET = LEGACY_PACKET_SIZE + 116
-DRONE_SPEED_OFFSET = LEGACY_PACKET_SIZE + 120
-DRONE_PHASE_OFFSET = LEGACY_PACKET_SIZE + 170
-DRONE_LAST_COMMAND_OFFSET = LEGACY_PACKET_SIZE + 186
-DRONE_TARGET_ALTITUDE_OFFSET = LEGACY_PACKET_SIZE + 189
-DRONE_PACKET_SIZE = LEGACY_PACKET_SIZE + 193
-
 RESULT_ACCEPTED, RESULT_REJECTED, RESULT_FAILED = 1, 2, 3
-OVERRIDE_HOLD_S = 45        # commanded modes hand back to the recording after this
-DESCENT_RATE = 2.5          # m/s during an emergency landing
-AIRBORNE_M = 0.5
-IDLE_RPM, IDLE_THROTTLE = 960, 8
-
-MODE_LABELS = {
-    0: 'STANDBY',
-    1: 'ARMED',
-    2: 'TAKEOFF',
-    3: 'SURVEY',
-    4: 'RETURN_TO_HOME',
-    5: 'LANDING',
-    6: 'CHARGING',
-    7: 'EMERGENCY',
-}
-
-
-def write_fixed_string(packet, offset, value, size=16):
-    encoded = value.encode('utf-8')[:size - 1]
-    packet[offset:offset + size] = encoded + bytes(size - len(encoded))
 
 def send_tm(simulator):
     tm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -109,6 +79,11 @@ def receive_tc(simulator):
 
 
 class Simulator():
+    """Plays back the spacecraft part of the recording and runs the drone live.
+
+    The drone part of each packet comes from drone_model, stepped once per packet,
+    so commands change what the vehicle actually does instead of overwriting bytes.
+    """
 
     def __init__(self, rate):
         self.tm_counter = 0
@@ -118,16 +93,9 @@ class Simulator():
         self.last_tc = None
         self.rate = rate
         self.state_lock = Lock()
-        self.mode_override = None
-        self.armed_override = None
-        self.override_until = 0.0
-        self.altitude = 0.0         # last altitude sent, used to refuse unsafe commands
-        self.position = (0.0, 0.0)  # last latitude and longitude sent
-        self.emergency = None       # {'alt', 'start', 'lat', 'lon', 'landed'} after EmergencyLand
-        self.target_altitude = 40.0
+        self.drone = DroneModel()
         self.last_command_id = 0
         self.last_command_result = 0
-        self.motor_test = None
 
     def start(self):
         self.tm_thread = Thread(target=send_tm, args=(self,))
@@ -141,119 +109,54 @@ class Simulator():
         cmdhex = None
         if self.last_tc:
             cmdhex = binascii.hexlify(self.last_tc).decode('ascii')
-        return 'Sent: {} packets. Received: {} commands. Last command: {}'.format(
-                         self.tm_counter, self.tc_counter, cmdhex)
-
-    def hold(self, mode, armed, seconds=OVERRIDE_HOLD_S):
-        self.mode_override, self.armed_override = mode, armed
-        self.override_until = monotonic() + seconds
+        return 'Sent: {} packets. Received: {} commands. State: {}. Last command: {}'.format(
+            self.tm_counter, self.tc_counter, NAMES[self.drone.state], cmdhex)
 
     def apply_command(self, data):
-        """Apply the small command protocol defined in the drone MDB."""
+        """Map the drone MDB commands onto state machine transition requests."""
         with self.state_lock:
             self.last_tc = data
             self.tc_counter += 1
             self.last_command_result = RESULT_FAILED
             if len(data) < 8:
                 return
-
             command_id = struct.unpack_from('>H', data, 6)[0]
             self.last_command_id = command_id
-            airborne = self.altitude > AIRBORNE_M
+            drone = self.drone
             try:
-                if command_id == 10:  # Arm
-                    if not airborne:
-                        self.hold(1, True)
-                elif command_id == 11:  # Disarm
-                    if airborne:
-                        # Never cut the motors in flight.
-                        self.last_command_result = RESULT_REJECTED
-                        return
-                    self.hold(0, False)
-                    self.motor_test = None
-                elif command_id == 12 and len(data) >= 9:  # SetFlightMode
-                    self.hold(data[8], True)
-                elif command_id == 13 and len(data) >= 12:  # SetTargetAltitude
-                    self.target_altitude = struct.unpack_from('>f', data, 8)[0]
-                elif command_id == 14 and len(data) >= 12:  # MotorTest
+                if command_id == 10:                                # Arm
+                    accepted = drone.request(ARMED)
+                elif command_id == 11:                              # Disarm
+                    accepted = drone.request(STANDBY)
+                elif command_id == 12 and len(data) >= 9:           # SetFlightMode
+                    accepted = drone.request(data[8])
+                elif command_id == 13 and len(data) >= 12:          # SetTargetAltitude
+                    drone.target_alt = struct.unpack_from('>f', data, 8)[0]
+                    accepted = True
+                elif command_id == 14 and len(data) >= 12:          # MotorTest, on the ground only
                     motor, throttle, duration = struct.unpack_from('>BBH', data, 8)
-                    if airborne or not 1 <= motor <= 4 or not 0 <= throttle <= 100:
-                        self.last_command_result = RESULT_REJECTED
-                        return
-                    self.motor_test = (motor - 1, throttle, monotonic() + duration)
-                elif command_id == 16 and len(data) >= 17:  # ConfigureGeofence
-                    # Arguments are validated and encoded by Yamcs. The demo stores
-                    # acknowledgement in telemetry; a real vehicle would persist them.
-                    struct.unpack_from('>HffB', data, 8)
-                elif command_id == 17:  # EmergencyLand
-                    if airborne:
-                        self.emergency = {'alt': self.altitude, 'start': monotonic(), 'landed': False,
-                                          'lat': self.position[0], 'lon': self.position[1]}
-                        self.hold(5, True, seconds=3600)
+                    accepted = drone.state in (STANDBY, ARMED) and 1 <= motor <= 4 and 0 <= throttle <= 100
+                    if accepted:
+                        drone.motor_test = (motor - 1, throttle, drone.mission_t + duration)
+                elif command_id == 16 and len(data) >= 17:          # ConfigureGeofence
+                    struct.unpack_from('>HffB', data, 8)            # validated by Yamcs; acknowledged only
+                    accepted = True
+                elif command_id == 17:                              # EmergencyLand
+                    accepted = drone.request(EMERGENCY)
                 else:
                     return
-                self.last_command_result = RESULT_ACCEPTED
+                self.last_command_result = RESULT_ACCEPTED if accepted else RESULT_REJECTED
             except (IndexError, struct.error):
                 self.last_command_result = RESULT_FAILED
 
-    @staticmethod
-    def set_motors(packet, rpm, throttle, status):
-        for motor in range(4):
-            offset = DRONE_MOTORS_OFFSET + motor * 8
-            temperature = struct.unpack_from('>h', packet, offset + 4)[0]
-            current = round(throttle * 0.22 / 0.01) if rpm else 0
-            struct.pack_into('>HHhBB', packet, offset, rpm, current, temperature, throttle, status)
-
     def apply_command_state(self, packet):
-        if len(packet) < DRONE_PACKET_SIZE:
+        """Step the drone one packet period and write its telemetry into the packet."""
+        if len(packet) < LEGACY_PACKET_SIZE + EXTENSION_SIZE:
             return
         with self.state_lock:
-            now = monotonic()
-            recorded_alt = struct.unpack_from('>f', packet, DRONE_ALTITUDE_OFFSET)[0]
-            recorded_armed = bool(packet[DRONE_ARMED_OFFSET])
-            if self.emergency is not None:
-                em = self.emergency
-                # Descend vertically from where the command was received, then stay
-                # landed and disarmed until the recording is back on the pad too.
-                altitude = 0.0 if em['landed'] else max(0.0, em['alt'] - DESCENT_RATE * (now - em['start']))
-                struct.pack_into('>ffff', packet, DRONE_POSITION_OFFSET, em['lat'], em['lon'], altitude, 0.0)
-                if altitude == 0.0 and not em['landed']:
-                    em['landed'] = True
-                    self.hold(0, False, seconds=3600)
-                if em['landed']:
-                    self.set_motors(packet, 0, 0, 0)
-                    if recorded_alt <= AIRBORNE_M and not recorded_armed:
-                        self.emergency = None
-                        self.mode_override = self.armed_override = None
-            elif self.mode_override is not None and now >= self.override_until:
-                self.mode_override = self.armed_override = None
-
-            if self.mode_override is not None:
-                packet[DRONE_MODE_OFFSET] = self.mode_override
-                write_fixed_string(packet, DRONE_PHASE_OFFSET, MODE_LABELS.get(self.mode_override, 'COMMAND_MODE'))
-            if self.armed_override is not None:
-                packet[DRONE_ARMED_OFFSET] = int(self.armed_override)
-                if recorded_alt <= AIRBORNE_M and self.emergency is None:
-                    # On the pad the motors follow the commanded arm state.
-                    if self.armed_override:
-                        self.set_motors(packet, IDLE_RPM, IDLE_THROTTLE, 1)
-                    else:
-                        self.set_motors(packet, 0, 0, 0)
-            lat, lon, self.altitude = struct.unpack_from('>fff', packet, DRONE_POSITION_OFFSET)
-            self.position = (lat, lon)
-
-            if self.motor_test is not None:
-                motor, throttle, stop_time = self.motor_test
-                if monotonic() < stop_time:
-                    offset = DRONE_MOTORS_OFFSET + motor * 8
-                    struct.pack_into('>HHhBB', packet, offset, throttle * 122, throttle * 18, 320, throttle, 1)
-                    write_fixed_string(packet, DRONE_PHASE_OFFSET, 'MOTOR_TEST')
-                else:
-                    self.motor_test = None
-
-            struct.pack_into('>H', packet, DRONE_LAST_COMMAND_OFFSET, self.last_command_id)
-            packet[DRONE_LAST_COMMAND_OFFSET + 2] = self.last_command_result
-            struct.pack_into('>f', packet, DRONE_TARGET_ALTITUDE_OFFSET, self.target_altitude)
+            self.drone.step(1.0 / self.rate)
+            packet[LEGACY_PACKET_SIZE:LEGACY_PACKET_SIZE + EXTENSION_SIZE] = self.drone.pack(
+                last_command=(self.last_command_id, self.last_command_result))
 
 
 if __name__ == '__main__':

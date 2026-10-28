@@ -137,6 +137,10 @@
           </SizeInBits>
         </StringDataEncoding>
       </StringParameterType>
+      <IntegerParameterType name="StateCodeType" signed="false" shortDescription="Flight state machine code: 0 STANDBY, 1 ARMED, 2 TAKEOFF, 3 SURVEY, 4 RETURN_TO_HOME, 5 LANDING, 6 CHARGING, 7 EMERGENCY">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="8" />
+      </IntegerParameterType>
       <EnumeratedParameterType name="FlightModeType">
         <UnitSet />
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
@@ -619,6 +623,7 @@
       <Parameter name="Enum_Para_3" parameterTypeRef="EnumerationTest" />
       <Parameter name="MissionElapsedTime" parameterTypeRef="SecondsType" />
       <Parameter name="FlightMode" parameterTypeRef="FlightModeType" />
+      <Parameter name="CurrentState" parameterTypeRef="StateCodeType" shortDescription="Flight state machine state, same byte as FlightMode" />
       <Parameter name="Armed" parameterTypeRef="EnabledType" />
       <Parameter name="FailsafeActive" parameterTypeRef="HealthyType" />
       <Parameter name="VehicleCallsign" parameterTypeRef="Label16Type" />
@@ -761,6 +766,11 @@
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="FlightMode" />
+          <ParameterRefEntry parameterRef="CurrentState">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>-8</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="Armed" />
           <ParameterRefEntry parameterRef="FailsafeActive" />
           <ParameterRefEntry parameterRef="VehicleCallsign" />
@@ -1212,7 +1222,7 @@
         <DefaultSignificance consequenceLevel="critical" reasonForWarning="The vehicle will leave its current mission and land immediately" />
         <VerifierSet>
           <CompleteVerifier>
-            <Comparison parameterRef="FlightMode" value="LANDING" />
+            <Comparison parameterRef="FlightMode" value="EMERGENCY" />
             <CheckWindow timeToStopChecking="PT5S" />
           </CompleteVerifier>
         </VerifierSet>

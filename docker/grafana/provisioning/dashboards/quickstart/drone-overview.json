@@ -7501,6 +7501,1411 @@
         "kind": "Panel",
         "spec": {
           "id": 31,
+          "title": "Flight state machine",
+          "description": "States and allowed transitions of the drone. Highlighting is derived from the single CurrentState code with calculateField transformations.",
+          "links": [],
+          "transparent": true,
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "jaops-yamcs-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "type": "single",
+                        "endpoint": "demo_realtime",
+                        "asVariable": true,
+                        "endpointVariable": "$endpoint",
+                        "customVariableString": false,
+                        "parameter": "/drone/CurrentState"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S0",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "0"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S1",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "1"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S2",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "2"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S3",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "3"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S4",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "4"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S5",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "5"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S6",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "6"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "S7",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/CurrentState",
+                        "operator": "-",
+                        "right": "7"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "canvas",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "inlineEditing": false,
+                "showAdvancedTypes": true,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Root",
+                  "elements": [
+                    {
+                      "type": "text",
+                      "name": "current-l",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Current state"
+                        },
+                        "size": 12,
+                        "align": "left",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#9aa3b2"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 3,
+                        "right": 83,
+                        "top": 3,
+                        "bottom": 89
+                      },
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "current",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "/drone/CurrentState",
+                          "fixed": ""
+                        },
+                        "size": 16,
+                        "align": "left",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 17,
+                        "right": 43,
+                        "top": 3,
+                        "bottom": 89
+                      },
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "STANDBY-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "STANDBY"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S0"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S0"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 28.0,
+                        "right": 53.0,
+                        "top": 16.0,
+                        "bottom": 64.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "ARMED-box",
+                          "source": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "both"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "ARMED-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "ARMED"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S1"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S1"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 53.0,
+                        "right": 28.0,
+                        "top": 16.0,
+                        "bottom": 64.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "TAKEOFF-box",
+                          "source": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "TAKEOFF-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "TAKEOFF"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S2"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S2"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 78.0,
+                        "right": 3.0,
+                        "top": 16.0,
+                        "bottom": 64.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "SURVEY-box",
+                          "source": {
+                            "x": 0,
+                            "y": -1
+                          },
+                          "target": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        },
+                        {
+                          "targetName": "bus",
+                          "source": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": 1,
+                            "y": 1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#5b6270"
+                          },
+                          "size": {
+                            "fixed": 1,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "dashed",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "none"
+                          },
+                          "vertices": [
+                            {
+                              "x": 1,
+                              "y": 0
+                            }
+                          ]
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "SURVEY-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "SURVEY"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S3"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S3"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 78.0,
+                        "right": 3.0,
+                        "top": 52.0,
+                        "bottom": 28.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "RETURN_TO_HOME-box",
+                          "source": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        },
+                        {
+                          "targetName": "bus",
+                          "source": {
+                            "x": 0,
+                            "y": -1
+                          },
+                          "target": {
+                            "x": 0.7341040462427746,
+                            "y": 1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#5b6270"
+                          },
+                          "size": {
+                            "fixed": 1,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "dashed",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "none"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "RETURN_TO_HOME-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "RETURN HOME"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S4"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S4"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 53.0,
+                        "right": 28.0,
+                        "top": 52.0,
+                        "bottom": 28.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "LANDING-box",
+                          "source": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        },
+                        {
+                          "targetName": "bus",
+                          "source": {
+                            "x": 0,
+                            "y": -1
+                          },
+                          "target": {
+                            "x": 0.1560693641618498,
+                            "y": 1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#5b6270"
+                          },
+                          "size": {
+                            "fixed": 1,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "dashed",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "none"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "LANDING-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "LANDING"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S5"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S5"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 28.0,
+                        "right": 53.0,
+                        "top": 52.0,
+                        "bottom": 28.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "STANDBY-box",
+                          "source": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "target": {
+                            "x": 0,
+                            "y": -1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        },
+                        {
+                          "targetName": "EMERGENCY-box",
+                          "source": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "CHARGING-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "CHARGING"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S6"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S6"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 3.0,
+                        "right": 78.0,
+                        "top": 16.0,
+                        "bottom": 64.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "STANDBY-box",
+                          "source": {
+                            "x": 1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "both"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "EMERGENCY-box",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "EMERGENCY"
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#181c24",
+                          "field": "S7"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#2b3040",
+                          "field": "S7"
+                        },
+                        "radius": 8,
+                        "width": 2
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 3.0,
+                        "right": 78.0,
+                        "top": 52.0,
+                        "bottom": 28.0
+                      },
+                      "connections": [
+                        {
+                          "targetName": "STANDBY-box",
+                          "source": {
+                            "x": 0.5,
+                            "y": 1
+                          },
+                          "target": {
+                            "x": -0.5,
+                            "y": -1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#9aa3b2"
+                          },
+                          "size": {
+                            "fixed": 2,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "solid",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          },
+                          "vertices": [
+                            {
+                              "x": 0,
+                              "y": 0.5
+                            },
+                            {
+                              "x": 1,
+                              "y": 0.5
+                            }
+                          ]
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "bus",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": ""
+                        },
+                        "size": 14,
+                        "align": "center",
+                        "valign": "top",
+                        "color": {
+                          "fixed": "#e6e9ef"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#5b6270"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#5b6270"
+                        },
+                        "radius": 0,
+                        "width": 1
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 12.5,
+                        "right": 1.0,
+                        "top": 84.0,
+                        "bottom": 15.6
+                      },
+                      "connections": [
+                        {
+                          "targetName": "EMERGENCY-box",
+                          "source": {
+                            "x": -1,
+                            "y": 0
+                          },
+                          "target": {
+                            "x": 0,
+                            "y": -1
+                          },
+                          "path": "straight",
+                          "color": {
+                            "fixed": "#5b6270"
+                          },
+                          "size": {
+                            "fixed": 1,
+                            "min": 1,
+                            "max": 10
+                          },
+                          "lineStyle": {
+                            "style": "dashed",
+                            "animate": false
+                          },
+                          "direction": {
+                            "fixed": "forward"
+                          }
+                        }
+                      ],
+                      "links": [],
+                      "actions": []
+                    },
+                    {
+                      "type": "text",
+                      "name": "bus-l",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Any flight state can enter EMERGENCY"
+                        },
+                        "size": 11,
+                        "align": "left",
+                        "valign": "middle",
+                        "color": {
+                          "fixed": "#5b6270"
+                        }
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 14.5,
+                        "right": 25.5,
+                        "top": 86.0,
+                        "bottom": 5.0
+                      },
+                      "links": [],
+                      "actions": []
+                    }
+                  ],
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  }
+                },
+                "tooltip": {
+                  "mode": "single"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S0"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S1"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S2"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S3"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S4"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S5"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S6"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "#3987e5",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "S7"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "color": "red",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": -100,
+                              "to": 100,
+                              "result": {
+                                "color": "#1d2129",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "/drone/CurrentState"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "Standby",
+                                "color": "#3987e5",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "Armed",
+                                "color": "#3987e5",
+                                "index": 1
+                              },
+                              "2": {
+                                "text": "Takeoff",
+                                "color": "#3987e5",
+                                "index": 2
+                              },
+                              "3": {
+                                "text": "Survey",
+                                "color": "#3987e5",
+                                "index": 3
+                              },
+                              "4": {
+                                "text": "Return To Home",
+                                "color": "#3987e5",
+                                "index": 4
+                              },
+                              "5": {
+                                "text": "Landing",
+                                "color": "#3987e5",
+                                "index": 5
+                              },
+                              "6": {
+                                "text": "Charging",
+                                "color": "#3987e5",
+                                "index": 6
+                              },
+                              "7": {
+                                "text": "Emergency",
+                                "color": "red",
+                                "index": 7
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-32": {
+        "kind": "Panel",
+        "spec": {
+          "id": 32,
           "title": "Last command",
           "description": "Command acknowledgement reported by the vehicle.",
           "links": [],
@@ -7684,10 +9089,10 @@
           }
         }
       },
-      "panel-32": {
+      "panel-33": {
         "kind": "Panel",
         "spec": {
-          "id": 32,
+          "id": 33,
           "title": "Data links",
           "description": "Yamcs data links, with enable, disable and reset actions.",
           "links": [],
@@ -7729,63 +9134,6 @@
                 "nameFilter": "",
                 "refreshInterval": 5,
                 "showDetails": false
-              },
-              "fieldConfig": {
-                "defaults": {},
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-33": {
-        "kind": "Panel",
-        "spec": {
-          "id": 33,
-          "title": "",
-          "description": "Keeps the dashboard time range on Yamcs mission time.",
-          "links": [],
-          "transparent": true,
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "jaops-yamcs-datasource",
-                      "version": "v0",
-                      "spec": {
-                        "type": "time",
-                        "endpoint": "demo_realtime",
-                        "asVariable": true,
-                        "endpointVariable": "$endpoint",
-                        "customVariableString": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "jaops-timesync-panel",
-            "version": "13.0.2",
-            "spec": {
-              "options": {
-                "enabled": true,
-                "minWriteIntervalMs": 10000,
-                "normalizeToNowThresholdMs": 1500,
-                "offsetStepMs": 15000,
-                "onlyWhenRelativeRange": true,
-                "showStatus": true
               },
               "fieldConfig": {
                 "defaults": {},
@@ -8535,7 +9883,7 @@
                                 "spec": {
                                   "x": 0,
                                   "y": 0,
-                                  "width": 7,
+                                  "width": 6,
                                   "height": 14,
                                   "element": {
                                     "kind": "ElementReference",
@@ -8546,10 +9894,10 @@
                               {
                                 "kind": "GridLayoutItem",
                                 "spec": {
-                                  "x": 7,
+                                  "x": 6,
                                   "y": 0,
-                                  "width": 5,
-                                  "height": 5,
+                                  "width": 10,
+                                  "height": 14,
                                   "element": {
                                     "kind": "ElementReference",
                                     "name": "panel-31"
@@ -8559,10 +9907,10 @@
                               {
                                 "kind": "GridLayoutItem",
                                 "spec": {
-                                  "x": 7,
-                                  "y": 5,
-                                  "width": 5,
-                                  "height": 6,
+                                  "x": 16,
+                                  "y": 9,
+                                  "width": 3,
+                                  "height": 5,
                                   "element": {
                                     "kind": "ElementReference",
                                     "name": "panel-32"
@@ -8572,10 +9920,10 @@
                               {
                                 "kind": "GridLayoutItem",
                                 "spec": {
-                                  "x": 7,
-                                  "y": 11,
+                                  "x": 19,
+                                  "y": 9,
                                   "width": 5,
-                                  "height": 3,
+                                  "height": 5,
                                   "element": {
                                     "kind": "ElementReference",
                                     "name": "panel-33"
@@ -8585,10 +9933,10 @@
                               {
                                 "kind": "GridLayoutItem",
                                 "spec": {
-                                  "x": 12,
+                                  "x": 16,
                                   "y": 0,
-                                  "width": 12,
-                                  "height": 14,
+                                  "width": 8,
+                                  "height": 9,
                                   "element": {
                                     "kind": "ElementReference",
                                     "name": "panel-34"
