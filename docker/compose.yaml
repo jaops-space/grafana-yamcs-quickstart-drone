@@ -20,6 +20,8 @@ services:
     volumes:
       - ../:/workspace
       - yamcs-images:/tmp/images
+      # keeps Maven dependencies between runs so restarts skip the download
+      - maven-cache:/root/.m2
     ports:
       - "8090:8090"
       - "10015:10015/udp"
@@ -69,8 +71,8 @@ services:
       GF_SECURITY_ALLOW_EMBEDDING: "true"
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
-      GRAFANA_YAMCS_PLUGIN_VERSION: ${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}
-      GF_PLUGINS_PREINSTALL_SYNC: jaops-yamcs-app@${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}@https://github.com/jaops-space/grafana-yamcs-jaops/releases/download/v${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}/jaops-yamcs-app-${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.1}.zip
+      GRAFANA_YAMCS_PLUGIN_VERSION: ${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.6}
+      GF_PLUGINS_PREINSTALL_SYNC: jaops-yamcs-app@${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.6}@https://github.com/jaops-space/grafana-yamcs-jaops/releases/download/v${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.6}/jaops-yamcs-app-${GRAFANA_YAMCS_PLUGIN_VERSION:-1.1.6}.zip
       YAMCS_HOST: ${YAMCS_HOST:-yamcs:8090}
       YAMCS_INSTANCE: ${YAMCS_INSTANCE:-demo}
       YAMCS_PROCESSOR: ${YAMCS_PROCESSOR:-realtime}
@@ -91,4 +93,5 @@ networks:
     driver: bridge
 
 volumes:
+  maven-cache:
   yamcs-images:

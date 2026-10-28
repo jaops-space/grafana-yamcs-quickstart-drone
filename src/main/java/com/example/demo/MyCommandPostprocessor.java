@@ -5,6 +5,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.CommandPostprocessor;
+import org.yamcs.tctm.Link;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
@@ -31,14 +32,9 @@ public class MyCommandPostprocessor implements CommandPostprocessor {
     private CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
     private CommandHistoryPublisher commandHistory;
 
-    // Constructor used when this postprocessor is used without YAML configuration
-    public MyCommandPostprocessor(String yamcsInstance) {
-        this(yamcsInstance, YConfiguration.emptyConfig());
-    }
-
-    // Constructor used when this postprocessor is used with YAML configuration
-    // (commandPostprocessorClassArgs)
-    public MyCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+    // Called by Yamcs during initialization
+    @Override
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
     }
 
     // Called by Yamcs during initialization

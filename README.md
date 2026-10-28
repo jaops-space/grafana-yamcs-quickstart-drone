@@ -43,7 +43,7 @@ Grafana is provisioned by this quickstart repo with one demo setup:
 The plugin version is controlled from Docker Compose. Override it with:
 
 ```sh
-export GRAFANA_YAMCS_PLUGIN_VERSION=1.1.1
+export GRAFANA_YAMCS_PLUGIN_VERSION=1.1.6
 ```
 
 The image generator publishes camera frames at 2 FPS by default. Override it with:

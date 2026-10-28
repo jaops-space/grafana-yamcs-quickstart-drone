@@ -24,5 +24,5 @@ admin / admin
 Override the plugin version:
 
 ```sh
-GRAFANA_YAMCS_PLUGIN_VERSION=1.1.1 docker compose -f compose.yaml up --build
+GRAFANA_YAMCS_PLUGIN_VERSION=1.1.6 docker compose -f compose.yaml up --build
 ```
