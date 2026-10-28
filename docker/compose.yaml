@@ -51,7 +51,7 @@ services:
     command: "python3 simulator/images/generate_images.py --yamcs-host yamcs:8090 --public-yamcs-url http://localhost:8090 --image-dir /images"
     environment:
       PYTHONUNBUFFERED: "1"
-      IMAGE_INTERVAL: ${IMAGE_INTERVAL:-0.5}
+      IMAGE_INTERVAL: ${IMAGE_INTERVAL:-0.25}
     depends_on:
       yamcs:
         condition: service_healthy

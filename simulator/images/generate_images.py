@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-"""Generate drone camera POV frames and publish their URLs as Yamcs local parameters."""
+"""Render the drone's forward camera and publish frame URLs as Yamcs local parameters.
+
+The camera pose (position, altitude, roll, pitch, heading) is read from live Yamcs
+telemetry each frame, so the view always matches what the dashboards show,
+including commanded manoeuvres.
+
+Rendering is a vectorised voxel-space raycaster: a tileable heightmap with baked
+hillshade and cast shadows is generated once, then each frame casts one ray per
+screen column and resolves the visible terrain sample for every pixel with a
+per-column depth search. A frame costs a few tens of milliseconds with NumPy.
+"""
 
 from __future__ import annotations
 
@@ -10,267 +20,199 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageDraw
 
+WIDTH, HEIGHT = 640, 360
+MAP = 512                  # heightmap cells per side (tileable)
+CELL_M = 2.0               # metres per cell, so the terrain tile is 1024 m wide
+DEPTHS = 240               # depth samples per ray
+FAR_M = 900.0
+FOCAL = WIDTH * 0.75
+CAMERA_TILT_DEG = -8.0     # camera is mounted looking slightly down
+HOME_LAT, HOME_LON = 48.8566, 2.3522
+SUN_ELEVATION_DEG = 22.0   # low sun for long shadows; light comes from +x (east)
 
-WIDTH = 960
-HEIGHT = 540
-SUPERSAMPLE = 2
+SKY_TOP = np.array([58, 112, 176], dtype=np.float32)
+SKY_HORIZON = np.array([196, 214, 224], dtype=np.float32)
 
-
-@dataclass(frozen=True)
-class DroneState:
-    second: int
-    mode: int
-    phase: str
-    armed: bool
-    failsafe: bool
-    altitude_m: float
-    speed_mps: float
-    roll_deg: float
-    pitch_deg: float
-    yaw_deg: float
-    north_m: float
-    east_m: float
+MODE_LABELS = ["STANDBY", "ARMED", "TAKEOFF", "SURVEY", "RETURN TO HOME", "LANDING", "CHARGING", "EMERGENCY"]
 
 
-def flight_state(second: int) -> tuple[int, str, bool, float, float]:
-    t = second % 300
-    if t < 30:
-        return 0, "STANDBY", False, 0.0, 0.0
-    if t < 60:
-        progress = (t - 30) / 30
-        return 2, "TAKEOFF", True, 40.0 * progress, 3.0 * progress
-    if t < 180:
-        return 3, "SURVEY", True, 40.0 + 2.0 * math.sin(t / 12), 12.0
-    if t < 220:
-        progress = (t - 180) / 40
-        return 4, "RETURN", True, 40.0 - 5.0 * progress, 14.0
-    if t < 250:
-        progress = (t - 220) / 30
-        return 5, "LANDING", True, 35.0 * (1.0 - progress), 4.0 * (1.0 - progress)
-    return 6, "CHARGING", False, 0.0, 0.0
+@dataclass
+class Pose:
+    north_m: float = 0.0
+    east_m: float = 0.0
+    altitude_m: float = 0.0
+    roll_deg: float = 0.0
+    pitch_deg: float = 0.0
+    yaw_deg: float = 0.0
+    mode: str = "STANDBY"
+    failsafe: bool = False
 
 
-def mission_position(second: int) -> tuple[float, float]:
-    t = second % 300
-    if t < 30:
-        return 0.0, 0.0
-    if t < 60:
-        progress = (t - 30) / 30
-        return 8.0 * progress, 5.0 * progress
-    if t < 180:
-        a = (t - 60) / 120 * 2 * math.pi
-        return 120.0 * math.sin(a), 65.0 * math.sin(2 * a)
-    if t < 220:
-        progress = (t - 180) / 40
-        return 0.0, 0.0 * (1.0 - progress)
-    if t < 250:
-        progress = (t - 220) / 30
-        return 3.0 * (1.0 - progress), 2.0 * (1.0 - progress)
-    return 0.0, 0.0
+# --------------------------------------------------------------------- terrain
+def build_terrain(seed: int = 7) -> tuple[np.ndarray, np.ndarray]:
+    """Return (height in metres, RGB colour with baked lighting), both MAP x MAP."""
+    rng = np.random.default_rng(seed)
+    freq = np.fft.fftfreq(MAP)
+    fx, fy = np.meshgrid(freq, freq)
+    radius = np.sqrt(fx * fx + fy * fy)
+    radius[0, 0] = 1.0
+    # 1/f^2 noise filtered in the frequency domain is smooth, natural and tileable.
+    spectrum = (rng.normal(size=(MAP, MAP)) + 1j * rng.normal(size=(MAP, MAP))) / radius ** 1.9
+    spectrum[radius > 0.2] = 0
+    height = np.real(np.fft.ifft2(spectrum))
+    height = (height - height.min()) / (height.max() - height.min())
+    height = height ** 1.5 * 62.0                         # ridges and bumps up to ~60 m
+
+    # Flatten a landing area around home (cell 0,0 wraps to all four corners).
+    idx = np.minimum(np.arange(MAP), MAP - np.arange(MAP)) * CELL_M
+    dist = np.sqrt(idx[None, :] ** 2 + idx[:, None] ** 2)
+    flat = np.clip((dist - 40.0) / 150.0, 0.0, 1.0)  # the survey loop flies a valley
+    flat = flat * flat * (3 - 2 * flat)
+    height = height * flat + 0.3
+
+    # Hillshade from the surface normal.
+    gy, gx = np.gradient(height, CELL_M)
+    sun = np.array([math.cos(math.radians(SUN_ELEVATION_DEG)), 0.0, math.sin(math.radians(SUN_ELEVATION_DEG))])
+    normal = np.stack([-gx, -gy, np.ones_like(height)])
+    normal /= np.linalg.norm(normal, axis=0)
+    shade = np.clip(np.tensordot(sun, normal, axes=1), 0.0, 1.0)
+
+    # Cast shadows: with the sun along +x, a cell is shadowed when some cell further
+    # east rises above the sun ray, i.e. max_{x'>x}(h(x') - k x') > h(x) - k x.
+    k = math.tan(math.radians(SUN_ELEVATION_DEG)) * CELL_M
+    x = np.arange(MAP * 2, dtype=np.float32)
+    tiled = np.concatenate([height, height], axis=1)        # wrap so the tile stays seamless
+    g = tiled - k * x
+    ahead = np.maximum.accumulate(g[:, ::-1], axis=1)[:, ::-1]
+    ahead = np.concatenate([ahead[:, 1:], np.full((MAP, 1), -1e9)], axis=1)
+    shadow = (ahead > g + 0.2)[:, :MAP]
+
+    # Colour by height and slope: meadow, dry grass, rock.
+    t = np.clip(height / 60.0, 0, 1)[..., None]
+    slope = np.clip(np.hypot(gx, gy) * 1.6, 0, 1)[..., None]
+    meadow = np.array([62, 104, 52], dtype=np.float32)
+    dry = np.array([128, 132, 76], dtype=np.float32)
+    rock = np.array([120, 110, 98], dtype=np.float32)
+    base = meadow * (1 - t) + dry * t
+    base = base * (1 - slope) + rock * slope
+    texture = 0.92 + 0.16 * rng.random((MAP, MAP, 1), dtype=np.float32)   # grain so close ground reads
+    light = (0.22 + 0.95 * shade[..., None]) * np.where(shadow[..., None], 0.38, 1.0)
+    color = base * light * texture
+
+    # Landing pad: a light disc with a dark ring at home.
+    pad = dist < 9.0
+    color[pad] = [170, 170, 162]
+    color[(dist > 7.0) & (dist < 8.5)] = [60, 62, 64]
+    return height.astype(np.float32), np.clip(color, 0, 255).astype(np.float32)
 
 
-def drone_state(second: int) -> DroneState:
-    mode, phase, armed, altitude_m, speed_mps = flight_state(second)
-    failsafe = 190 <= second % 300 < 205
-    if failsafe:
-        mode = 4
-        phase = "FAILSAFE_RETURN"
+class Camera:
+    def __init__(self) -> None:
+        self.height, self.color = build_terrain()
+        self.depth = np.geomspace(1.5, FAR_M, DEPTHS).astype(np.float32)
+        self.fog = (1.0 - np.exp(-self.depth / 520.0)).astype(np.float32)[None, :, None]
+        # Render with a margin on every side so rolling the image never shows corners.
+        self.render_w, self.render_h = int(WIDTH * 1.2), int(HEIGHT * 1.3)
+        self.lateral = ((np.arange(self.render_w) - self.render_w / 2) / FOCAL).astype(np.float32)
+        self.rows = np.arange(self.render_h, dtype=np.float32)
 
-    in_flight = armed and mode not in (0, 1, 6)
-    roll_deg = 4.0 * math.sin(second / 8.0) if in_flight else 0.0
-    pitch_deg = 3.0 * math.sin(second / 10.0) if in_flight else 0.0
-    yaw_deg = (second * 1.7) % 360
-    north_m, east_m = mission_position(second)
+    def render(self, pose: Pose) -> Image.Image:
+        yaw = math.radians(pose.yaw_deg)
+        fwd = np.array([math.cos(yaw), math.sin(yaw)], dtype=np.float32)     # north, east
+        right = np.array([-math.sin(yaw), math.cos(yaw)], dtype=np.float32)
+        cam_h = max(1.6, pose.altitude_m + float(self.sample_height(pose.north_m, pose.east_m)) + 1.2)
 
-    return DroneState(
-        second=second,
-        mode=mode,
-        phase=phase,
-        armed=armed,
-        failsafe=failsafe,
-        altitude_m=altitude_m,
-        speed_mps=speed_mps,
-        roll_deg=roll_deg,
-        pitch_deg=pitch_deg,
-        yaw_deg=yaw_deg,
-        north_m=north_m,
-        east_m=east_m,
-    )
+        # Sample points for every (column, depth): forward distance d, lateral d * tan.
+        d = self.depth[None, :]
+        lat = self.lateral[:, None] * d
+        north = pose.north_m + fwd[0] * d + right[0] * lat
+        east = pose.east_m + fwd[1] * d + right[1] * lat
+        fx, fy = east / CELL_M, north / CELL_M
+        x0, y0 = np.floor(fx).astype(np.int64), np.floor(fy).astype(np.int64)
+        ax, ay = (fx - x0)[..., None], (fy - y0)[..., None]
+        x0, y0 = x0 % MAP, y0 % MAP
+        x1, y1 = (x0 + 1) % MAP, (y0 + 1) % MAP
+        h = self.height[y0, x0]
+        col = ((self.color[y0, x0] * (1 - ax) + self.color[y0, x1] * ax) * (1 - ay)
+               + (self.color[y1, x0] * (1 - ax) + self.color[y1, x1] * ax) * ay)
 
+        # Screen row of each sample; tilt (mount angle plus pitch) shears the horizon.
+        # Looking down (negative tilt) raises the horizon on screen.
+        tilt = math.radians(CAMERA_TILT_DEG + pose.pitch_deg)
+        horizon = self.render_h / 2 + math.tan(tilt) * FOCAL
+        ys = horizon + (cam_h - h) / d * FOCAL
+        # Front-to-back: a sample is visible where it rises above everything nearer.
+        top = np.minimum.accumulate(ys, axis=1)
 
-def clamp(value: float, low: float, high: float) -> float:
-    return max(low, min(high, value))
+        col = col * (1 - self.fog) + SKY_HORIZON * self.fog
+        rows = self.rows
+        # Sky gradient follows the horizon so it stays consistent while pitching.
+        s = np.clip((rows - (horizon - self.render_h * 0.9)) / (self.render_h * 0.9), 0, 1)[:, None]
+        sky = SKY_TOP * (1 - s) + SKY_HORIZON * s
+        frame = np.empty((self.render_h, self.render_w, 3), dtype=np.float32)
+        for c in range(self.render_w):
+            # index of the first depth whose running top is at or above the row
+            k = np.searchsorted(-top[c], -rows, side="left")
+            visible = k < DEPTHS
+            frame[:, c] = np.where(visible[:, None], col[c, np.minimum(k, DEPTHS - 1)], sky)
+        if pose.failsafe:
+            frame = frame * np.array([1.08, 0.94, 0.9], dtype=np.float32)
 
+        image = Image.fromarray(np.clip(frame, 0, 255).astype(np.uint8))
+        if abs(pose.roll_deg) > 0.05:
+            image = image.rotate(-pose.roll_deg, resample=Image.Resampling.BILINEAR)
+        left, upper = (self.render_w - WIDTH) // 2, (self.render_h - HEIGHT) // 2
+        image = image.crop((left, upper, left + WIDTH, upper + HEIGHT))
+        self.draw_hud(image, pose)
+        return image
 
-def lerp(a: int, b: int, t: float) -> int:
-    return round(a + (b - a) * clamp(t, 0.0, 1.0))
+    def sample_height(self, north_m: float, east_m: float) -> float:
+        return self.height[int(north_m // CELL_M) % MAP, int(east_m // CELL_M) % MAP]
 
-
-def blend(a: tuple[int, int, int], b: tuple[int, int, int], t: float) -> tuple[int, int, int]:
-    return lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)
-
-
-def dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-
-def camera_basis(state: DroneState) -> tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
-    yaw = math.radians(state.yaw_deg)
-    pitch = math.radians(state.pitch_deg - 12.0)
-    roll = math.radians(state.roll_deg)
-
-    forward = (
-        math.cos(pitch) * math.cos(yaw),
-        math.cos(pitch) * math.sin(yaw),
-        math.sin(pitch),
-    )
-    world_right = (-math.sin(yaw), math.cos(yaw), 0.0)
-    world_up = (
-        -math.sin(pitch) * math.cos(yaw),
-        -math.sin(pitch) * math.sin(yaw),
-        math.cos(pitch),
-    )
-
-    right = (
-        world_right[0] * math.cos(roll) + world_up[0] * math.sin(roll),
-        world_right[1] * math.cos(roll) + world_up[1] * math.sin(roll),
-        world_right[2] * math.cos(roll) + world_up[2] * math.sin(roll),
-    )
-    up = (
-        world_up[0] * math.cos(roll) - world_right[0] * math.sin(roll),
-        world_up[1] * math.cos(roll) - world_right[1] * math.sin(roll),
-        world_up[2] * math.cos(roll) - world_right[2] * math.sin(roll),
-    )
-    return forward, right, up
-
-
-def project_ground_point(
-    state: DroneState,
-    north_m: float,
-    east_m: float,
-    width: int,
-    height: int,
-) -> tuple[float, float] | None:
-    camera_z = max(1.8, state.altitude_m + 1.0)
-    vector = (north_m - state.north_m, east_m - state.east_m, -camera_z)
-    forward, right, up = camera_basis(state)
-
-    depth = dot(vector, forward)
-    if depth <= 1.0:
-        return None
-
-    x = dot(vector, right)
-    y = dot(vector, up)
-    focal = width * 0.82
-    return width / 2 + focal * x / depth, height / 2 - focal * y / depth
+    @staticmethod
+    def draw_hud(image: Image.Image, pose: Pose) -> None:
+        draw = ImageDraw.Draw(image)
+        cx, cy = WIDTH // 2, HEIGHT // 2
+        draw.line([(cx - 14, cy), (cx - 5, cy)], fill=(235, 240, 245), width=1)
+        draw.line([(cx + 5, cy), (cx + 14, cy)], fill=(235, 240, 245), width=1)
+        draw.line([(cx, cy - 5), (cx, cy + 5)], fill=(235, 240, 245), width=1)
+        text = f"{pose.mode}   ALT {pose.altitude_m:5.1f} m   HDG {pose.yaw_deg % 360:03.0f}"
+        draw.rectangle((8, HEIGHT - 26, 16 + 6 * len(text), HEIGHT - 8), fill=(10, 14, 20))
+        draw.text((12, HEIGHT - 23), text, fill=(235, 240, 245))
 
 
-def draw_sky(draw: ImageDraw.ImageDraw, width: int, height: int, state: DroneState) -> None:
-    top = (72, 150, 225)
-    horizon = (183, 220, 245)
-    if state.failsafe:
-        top = (98, 130, 190)
-        horizon = (225, 190, 170)
-
-    for y in range(height):
-        draw.line([(0, y), (width, y)], fill=blend(top, horizon, y / height))
+# ------------------------------------------------------------------ telemetry
+POSE_PARAMETERS = ["/drone/Navigation.latitude", "/drone/Navigation.longitude", "/drone/Navigation.altitude",
+                   "/drone/Attitude.roll", "/drone/Attitude.pitch", "/drone/Attitude.yaw",
+                   "/drone/FlightMode", "/drone/FailsafeActive"]
 
 
-def ground_horizon_y(state: DroneState, height: int) -> int:
-    # Camera looks slightly down by default. Pitch moves the horizon naturally;
-    # altitude gives a slightly wider visible ground region.
-    pitch_effect = (state.pitch_deg - 12.0) / 36.0
-    altitude_effect = clamp(state.altitude_m / 80.0, 0.0, 1.0) * 0.08
-    return round(height * clamp(0.48 + pitch_effect - altitude_effect, 0.22, 0.72))
+def read_pose(processor, previous: Pose) -> Pose:
+    try:
+        values = processor.get_parameter_values(POSE_PARAMETERS)
+    except Exception as exc:                              # keep the feed alive on hiccups
+        print(f"telemetry read failed: {exc}", flush=True)
+        return previous
+    v = {name: (pv.eng_value if pv is not None else None) for name, pv in zip(POSE_PARAMETERS, values)}
 
+    def num(name: str, default: float) -> float:
+        value = v.get(name)
+        return float(value) if isinstance(value, (int, float)) else default
 
-def draw_ground(draw: ImageDraw.ImageDraw, width: int, height: int, state: DroneState) -> None:
-    horizon = ground_horizon_y(state, height)
-    near = (76, 116, 82)
-    far = (156, 181, 143)
-    if state.failsafe:
-        near = (104, 103, 86)
-        far = (186, 170, 132)
-
-    for y in range(horizon, height):
-        t = (y - horizon) / max(1, height - horizon)
-        draw.line([(0, y), (width, y)], fill=blend(far, near, t))
-
-
-def visible_polyline(points: list[tuple[float, float] | None], width: int, height: int) -> list[tuple[float, float]]:
-    visible: list[tuple[float, float]] = []
-    margin = max(width, height) * 2
-    for point in points:
-        if point is None:
-            if len(visible) >= 2:
-                break
-            visible = []
-            continue
-        x, y = point
-        if -margin <= x <= width + margin and -margin <= y <= height + margin:
-            visible.append((x, y))
-    return visible
-
-
-def draw_grid(draw: ImageDraw.ImageDraw, width: int, height: int, state: DroneState) -> None:
-    yaw = math.radians(state.yaw_deg)
-    forward = (math.cos(yaw), math.sin(yaw))
-    right = (-math.sin(yaw), math.cos(yaw))
-    grid_color = (214, 232, 204) if not state.failsafe else (232, 204, 176)
-
-    spacing = 20.0
-    max_depth = 620.0
-    max_lateral = 360.0
-
-    # Cross lines.
-    for depth in [i * spacing for i in range(1, int(max_depth // spacing) + 1)]:
-        points: list[tuple[float, float] | None] = []
-        for step in range(-36, 37):
-            lateral = step * spacing / 2
-            north = state.north_m + forward[0] * depth + right[0] * lateral
-            east = state.east_m + forward[1] * depth + right[1] * lateral
-            points.append(project_ground_point(state, north, east, width, height))
-        line = visible_polyline(points, width, height)
-        if len(line) >= 2:
-            alpha = clamp(1.0 - depth / max_depth, 0.15, 0.85)
-            draw.line(line, fill=blend((120, 160, 126), grid_color, alpha), width=1)
-
-    # Longitudinal lines.
-    for lateral in [i * spacing for i in range(-int(max_lateral // spacing), int(max_lateral // spacing) + 1)]:
-        points = []
-        for step in range(1, int(max_depth // spacing) + 1):
-            depth = step * spacing
-            north = state.north_m + forward[0] * depth + right[0] * lateral
-            east = state.east_m + forward[1] * depth + right[1] * lateral
-            points.append(project_ground_point(state, north, east, width, height))
-        line = visible_polyline(points, width, height)
-        if len(line) >= 2:
-            center_weight = clamp(1.0 - abs(lateral) / max_lateral, 0.2, 1.0)
-            color = blend((104, 145, 112), grid_color, center_weight * 0.85)
-            draw.line(line, fill=color, width=1)
-
-
-def draw_lens_edges(draw: ImageDraw.ImageDraw, width: int, height: int) -> None:
-    for i in range(42):
-        shade = round(18 * (1.0 - i / 42))
-        draw.rectangle((i, i, width - i - 1, height - i - 1), outline=(shade, shade + 5, shade + 9))
-
-
-def render_frame(path: Path, state: DroneState) -> None:
-    width = WIDTH * SUPERSAMPLE
-    height = HEIGHT * SUPERSAMPLE
-    image = Image.new("RGB", (width, height))
-    draw = ImageDraw.Draw(image)
-
-    draw_sky(draw, width, height, state)
-    draw_ground(draw, width, height, state)
-    draw_grid(draw, width, height, state)
-    draw_lens_edges(draw, width, height)
-
-    image = image.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
-    image.save(path, optimize=True)
+    lat = num("/drone/Navigation.latitude", HOME_LAT)
+    lon = num("/drone/Navigation.longitude", HOME_LON)
+    mode = v.get("/drone/FlightMode")
+    return Pose(north_m=(lat - HOME_LAT) * 111_320.0,
+                east_m=(lon - HOME_LON) * 111_320.0 * math.cos(math.radians(HOME_LAT)),
+                altitude_m=num("/drone/Navigation.altitude", 0.0),
+                roll_deg=num("/drone/Attitude.roll", 0.0),
+                pitch_deg=num("/drone/Attitude.pitch", 0.0),
+                yaw_deg=num("/drone/Attitude.yaw", 0.0),
+                mode=str(mode).replace("_", " ") if mode else previous.mode,
+                failsafe=bool(v.get("/drone/FailsafeActive")))
 
 
 def connect_processor(yamcs_host: str, instance: str, processor: str, username: str | None, password: str | None):
@@ -291,13 +233,14 @@ def connect_processor(yamcs_host: str, instance: str, processor: str, username: 
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--yamcs-host", default=os.getenv("YAMCS_HOST", "localhost:8090"))
     parser.add_argument("--public-yamcs-url", default=os.getenv("PUBLIC_YAMCS_URL", "http://localhost:8090"))
     parser.add_argument("--instance", default=os.getenv("YAMCS_INSTANCE", "demo"))
     parser.add_argument("--processor", default=os.getenv("YAMCS_PROCESSOR", "realtime"))
     parser.add_argument("--image-dir", type=Path, default=Path(os.getenv("IMAGE_DIR", "/tmp/images")))
-    parser.add_argument("--interval", type=float, default=float(os.getenv("IMAGE_INTERVAL", "2")))
+    parser.add_argument("--interval", type=float, default=float(os.getenv("IMAGE_INTERVAL", "0.25")),
+                        help="seconds between frames (0.25 = 4 frames per second)")
     parser.add_argument("--retain", type=int, default=int(os.getenv("IMAGE_RETAIN", "200")))
     parser.add_argument("--username", default=os.getenv("YAMCS_USERNAME"))
     parser.add_argument("--password", default=os.getenv("YAMCS_PASSWORD"))
@@ -306,42 +249,40 @@ def main() -> None:
     args = parser.parse_args()
 
     args.image_dir.mkdir(parents=True, exist_ok=True)
+    camera = Camera()
     if args.render_only:
-        render_frame(args.render_only, drone_state(96))
+        sample = Pose(north_m=140.0, east_m=-60.0, altitude_m=40.0, roll_deg=2.6, pitch_deg=-6.5,
+                      yaw_deg=110.0, mode="SURVEY")
+        camera.render(sample).save(args.render_only, quality=85)
         print(f"rendered {args.render_only}")
         return
 
     processor = connect_processor(args.yamcs_host, args.instance, args.processor, args.username, args.password)
-
+    pose = Pose()
     frame = 1
     while True:
-        state = drone_state(frame)
-        image_name = f"drone_camera_{frame:05d}.png"
-        image_path = args.image_dir / image_name
-        render_frame(image_path, state)
+        started = time.monotonic()
+        pose = read_pose(processor, pose)
+        image_name = f"drone_camera_{frame:05d}.jpg"
+        camera.render(pose).save(args.image_dir / image_name, quality=82)
 
         storage_url = f"/storage/buckets/images/objects/{image_name}"
         public_url = f"{args.public_yamcs_url.rstrip('/')}/api{storage_url}"
-        processor.set_parameter_values(
-            {
-                "/drone/CameraImageNumber": frame,
-                "/drone/CameraImageStorageUrl": storage_url,
-                "/drone/CameraImageUrl": public_url,
-                "/drone/CameraView": "forward-grid",
-            }
-        )
+        processor.set_parameter_values({
+            "/drone/CameraImageNumber": frame,
+            "/drone/CameraImageStorageUrl": storage_url,
+            "/drone/CameraImageUrl": public_url,
+            "/drone/CameraView": "forward-terrain",
+        })
 
-        if args.retain > 0:
-            old_frame = frame - args.retain
-            if old_frame > 0:
-                (args.image_dir / f"drone_camera_{old_frame:05d}.png").unlink(missing_ok=True)
-
-        print(f"published {public_url}", flush=True)
-
+        if args.retain > 0 and frame > args.retain:
+            (args.image_dir / f"drone_camera_{frame - args.retain:05d}.jpg").unlink(missing_ok=True)
+        if frame % 40 == 0:
+            print(f"frame {frame}: {public_url} ({(time.monotonic() - started) * 1000:.0f} ms)", flush=True)
         if args.once:
             return
         frame += 1
-        time.sleep(args.interval)
+        time.sleep(max(0.0, args.interval - (time.monotonic() - started)))
 
 
 if __name__ == "__main__":

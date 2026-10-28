@@ -1,2 +1,3 @@
 Pillow>=10
 yamcs-client>=1.9
+numpy>=1.26

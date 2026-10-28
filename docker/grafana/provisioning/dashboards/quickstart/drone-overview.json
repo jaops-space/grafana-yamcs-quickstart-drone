@@ -2328,6 +2328,10 @@
                       {
                         "id": "decimals",
                         "value": 0
+                      },
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
                       }
                     ]
                   },
@@ -2340,6 +2344,10 @@
                       {
                         "id": "decimals",
                         "value": 0
+                      },
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
                       }
                     ]
                   },
@@ -2352,6 +2360,10 @@
                       {
                         "id": "decimals",
                         "value": 0
+                      },
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
                       }
                     ]
                   },
@@ -2364,6 +2376,10 @@
                       {
                         "id": "decimals",
                         "value": 0
+                      },
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
                       }
                     ]
                   },
@@ -2836,7 +2852,24 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "alias": "Pitch drawing",
+                      "replaceFields": false,
+                      "binary": {
+                        "left": "/drone/Attitude.pitch",
+                        "operator": "*",
+                        "right": "-1"
+                      }
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -2894,7 +2927,7 @@
                       "config": {
                         "pitchAngle": {
                           "fixed": 0,
-                          "field": "/drone/Attitude.pitch",
+                          "field": "Pitch drawing",
                           "min": -90,
                           "max": 90
                         }
@@ -5481,6 +5514,54 @@
                           "mode": "fixed",
                           "fixedColor": "#d55181"
                         }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "/drone/Motors[0].rpm"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "/drone/Motors[1].rpm"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "/drone/Motors[2].rpm"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "/drone/Motors[3].rpm"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "rotrpm"
                       }
                     ]
                   }
