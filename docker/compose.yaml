@@ -45,6 +45,7 @@ services:
     build:
       context: ..
       dockerfile: docker/yamcs/ImageGenerator.Dockerfile
+    restart: on-failure
     hostname: image-generator
     container_name: grafana-yamcs-quickstart-drone-image-generator
     working_dir: /workspace

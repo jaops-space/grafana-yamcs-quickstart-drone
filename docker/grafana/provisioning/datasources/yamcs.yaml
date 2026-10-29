@@ -27,6 +27,12 @@ datasources:
           host: demo-host
           instance: demo
           processor: realtime
+        drone_realtime:
+          name: Drone Quickstart RT
+          description: Realtime processor for the drone dashboard
+          host: demo-host
+          instance: demo
+          processor: realtime
         demo_replay:
           name: Demo replay
           description: Replay processor for the drone demo

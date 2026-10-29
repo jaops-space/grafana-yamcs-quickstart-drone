@@ -350,7 +350,7 @@
       </FloatParameterType>
       <FloatParameterType name="MilliGType" sizeInBits="32">
         <UnitSet>
-          <Unit>g</Unit>
+          <Unit>g0</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned">
           <DefaultCalibrator>
